@@ -1,7 +1,7 @@
 ## Download Instructions  
 
 1. Download student.zip from this link: https://archive.ics.uci.edu/dataset/320/student+performance
-2. Unzip student.zip and place extracted files in /data/datasets
+2. Unzip student.zip and place extracted files in cs4120-project/data/datasets
 
 ## Dataset Information  
 
