@@ -3,6 +3,8 @@
 1. Download student.zip from this link: https://archive.ics.uci.edu/dataset/320/student+performance
 2. Unzip student.zip and place extracted files in /data/datasets
 
+## Dataset Information  
+
 | Variable     | Role    | Type             | Description                                                                                                                     | 
 |:------------:|:-------:|:----------------:|---------------------------------------------------------------------------------------------------------------------------------|
 | school       | Feature | Categorical      | student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)                                                | 
@@ -38,4 +40,3 @@
 | G1           | Target  | Categorical      | first period grade (numeric: from 0 to 20)                                                                                      | 
 | G2           | Target  | Categorical      | second period grade (numeric: from 0 to 20)                                                                                     | 
 | G3           | Target  | Integer          | final grade (numeric: from 0 to 20, output target)                                                                              | 
-: Dataset Information
