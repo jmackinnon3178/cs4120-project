@@ -1,5 +1,5 @@
 from sklearn import preprocessing, compose
-from data import Data
+from pandas import DataFrame as df
 
 class Features:
     def __init__(self) -> None:
@@ -18,13 +18,5 @@ class Features:
             ]
         )
 
-# X_train_encoded = preprocessor.fit_transform(X_train)
-# X_test_encoded = preprocessor.transform(X_test)
-#
-# y_train_labeled = (y_train >= 10).astype(int)
-# y_test_labeled = (y_test >= 10).astype(int)
-
-# data = Data()
-# X_train, X_test, y_train, y_test = data.split_data(1)
-
-# feature_cols = ['school','sex','age','address','famsize','Pstatus','Medu','Fedu','Mjob','Fjob','reason','guardian','traveltime','studytime','failures','schoolsup','famsup','paid','activities','nursery','higher','internet','romantic','famrel','freetime','goout','Dalc','Walc','health','absences','G1','G2']
+    def grade_to_pass_fail(self, target: df) -> df:
+        return (target >= 10).astype(int)
