@@ -14,7 +14,7 @@ class Features:
         self.preprocessor = ColumnTransformer(
             transformers=[
                 ('num', StandardScaler(), self.__feature_cols_numeric),
-                ('cat', OneHotEncoder(), self.__feature_cols_categorical),
+                ('cat', OneHotEncoder(drop='if_binary'), self.__feature_cols_categorical),
                 ('ord', OrdinalEncoder(), self.__feature_cols_ordinal)
             ],
         )
