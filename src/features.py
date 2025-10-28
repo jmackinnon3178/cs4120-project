@@ -1,4 +1,5 @@
-from sklearn import preprocessing, compose
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
+from sklearn.compose import ColumnTransformer
 from pandas import DataFrame as df
 
 class Features:
@@ -10,12 +11,12 @@ class Features:
 
         self.__feature_cols_ordinal = ['Medu','Fedu','traveltime','studytime','famrel','freetime','goout','Dalc','Walc','health']
 
-        self.preprocessor: compose.ColumnTransformer = compose.ColumnTransformer(
+        self.preprocessor = ColumnTransformer(
             transformers=[
-                ('num', preprocessing.StandardScaler(), self.__feature_cols_numeric),
-                ('cat', preprocessing.OneHotEncoder(), self.__feature_cols_categorical),
-                ('ord', preprocessing.OrdinalEncoder(), self.__feature_cols_ordinal)
-            ]
+                ('num', StandardScaler(), self.__feature_cols_numeric),
+                ('cat', OneHotEncoder(), self.__feature_cols_categorical),
+                ('ord', OrdinalEncoder(), self.__feature_cols_ordinal)
+            ],
         )
 
     def grade_to_pass_fail(self, target: df) -> df:
