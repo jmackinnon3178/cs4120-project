@@ -4,7 +4,7 @@ from sklearn import model_selection
 
 class Data:
     def __init__(self):
-        self.data = pd.read_csv('../data/datasets/student-por.csv',delimiter=';')
+        self.data = pd.read_csv('./data/datasets/student-por.csv',delimiter=';')
         self.X: df = self.data.drop(columns=["G3"])
         self.y: df = self.data["G3"]
 
