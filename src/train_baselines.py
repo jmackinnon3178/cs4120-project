@@ -1,8 +1,8 @@
 import numpy as np
 import mlflow
 import sklearn
-import features
 import data
+from features import lr_preprocessor
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import TransformedTargetRegressor
@@ -18,8 +18,7 @@ def train_linear_regression(random_state: int):
     baseline_experiment = mlflow.set_experiment("Baseline_Models")
     artifact_path = "lr_baseline"
     d = data.Data()
-    f = features.Features()
-    preprocessor = f.preprocessor
+    preprocessor = lr_preprocessor
 
     X_train, X_test, X_val, y_train, y_test, y_val = d.split_data(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state)
 
