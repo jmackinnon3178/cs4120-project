@@ -20,38 +20,7 @@ if (mlflow_tracking):
     baseline_experiment = mlflow.set_experiment("Baseline_Models")
 # run in cs4120-project directory mlflow server --host 127.0.0.1 --port 8080 --artifacts-destination ./models
 
-def train_linear_regression(random_state: int):
-    d = data.Data()
-    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
-
-    pipelines = {}
-    preprocessor = lr_prep_stdscaler
-    
-    pipelines["Dummy mean"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="mean"))
-    ])
-    pipelines["Dummy median"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="median"))
-    ])
-    pipelines["LinearRegression"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", LinearRegression())
-    ])
-    pipelines["LinearRegressionSelectKBest"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("select", SelectKBest(score_func=f_regression, k=min(20, X_train.shape[1]))),
-        ("regressor", LinearRegression())
-    ])
-    pipelines["LinearRegressionRFELinearSVR"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("rfe", RFE(estimator=LinearSVR(max_iter=10000), n_features_to_select=min(20, X_train.shape[1] // 2))),
-        ("regressor", LinearRegression())
-    ])
-
-    scoring = {"r2": "r2", "mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
-    cv = make_cv(y_train, n_splits=5, random_state=random_state)
+def cv_and_log(X_train, y_train, pipelines, scoring, cv):
     rows = []
 
     for name, pipe in pipelines.items():
@@ -85,5 +54,39 @@ def train_linear_regression(random_state: int):
         print("mlflow tracking disabled")
         print(baseline_results)
 
+def train_linear_regression():
+    d = data.Data()
+    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
+
+    pipelines = {}
+    preprocessor = lr_prep_stdscaler
+    
+    pipelines["Dummy mean"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DummyRegressor(strategy="mean"))
+    ])
+    pipelines["Dummy median"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DummyRegressor(strategy="median"))
+    ])
+    pipelines["LinearRegression"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", LinearRegression())
+    ])
+    pipelines["LinearRegressionSelectKBest"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("select", SelectKBest(score_func=f_regression, k=min(20, X_train.shape[1]))),
+        ("regressor", LinearRegression())
+    ])
+    pipelines["LinearRegressionRFELinearSVR"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("rfe", RFE(estimator=LinearSVR(max_iter=10000), n_features_to_select=min(20, X_train.shape[1] // 2))),
+        ("regressor", LinearRegression())
+    ])
+
+    scoring = {"r2": "r2", "mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
+    cv = make_cv(y_train, n_splits=5, random_state=random_state)
+    cv_and_log(X_train, y_train, pipelines, scoring, cv)
+
 if __name__ == '__main__':
-    train_linear_regression(random_state)
+    train_linear_regression()
