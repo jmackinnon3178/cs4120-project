@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import mlflow
 import data
-from features import lr_prep_stdscaler
-from sklearn.linear_model import LinearRegression
+from features import lr_prep_stdscaler, grade_to_pass_fail
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_validate
 from utils import make_cv
-from sklearn.dummy import DummyRegressor
+from sklearn.dummy import DummyRegressor, DummyClassifier
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
 from mlflow.models.signature import infer_signature
@@ -88,5 +88,48 @@ def train_linear_regression():
     cv = make_cv(y_train, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train, pipelines, scoring, cv)
 
+def train_logistic_regression():
+    d = data.Data()
+    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
+    y_train_clf = grade_to_pass_fail(y_train)
+
+    pipelines = {}
+    preprocessor = lr_prep_stdscaler
+    
+    pipelines["Dummy_most_frequent"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", DummyClassifier(strategy="most_frequent"))
+    ])
+    pipelines["Dummy_stratified"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", DummyClassifier(strategy="stratified"))
+    ])
+    pipelines["LogisticRegression"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", LogisticRegression(max_iter=500))
+    ])
+    pipelines["LogisticRegression_Univariate_SelectKBest"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("select", SelectKBest(score_func=f_classif, k=min(20, X_train.shape[1]))),
+        ("clf", LogisticRegression(max_iter=500))
+    ])
+    pipelines["LogisticRegression_RFE_LinearSVC"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("rfe", RFE(estimator=LinearSVC(dual=False, max_iter=5000), n_features_to_select=min(20, X_train.shape[1] // 2))),
+        ("clf", LogisticRegression(max_iter=500))
+    ])
+    pipelines["LogisticRegression_L1"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", LogisticRegression(penalty="l1", solver="saga", C=1.0, max_iter=2000))
+    ])
+    pipelines["LogisticRegression_L2"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", LogisticRegression(penalty="l2", solver="saga", C=1.0, max_iter=2000))
+    ])
+
+    scoring = {"accuracy": "accuracy", "f1": "f1"}
+    cv = make_cv(y_train_clf, n_splits=5, random_state=random_state)
+    cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
+
 if __name__ == '__main__':
-    train_linear_regression()
+    train_logistic_regression()
