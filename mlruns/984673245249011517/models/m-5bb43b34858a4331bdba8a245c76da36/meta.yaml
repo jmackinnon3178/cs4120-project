@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-5bb43b34858a4331bdba8a245c76da36/artifacts
+creation_timestamp: 1761939599994
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1761939602725
+model_id: m-5bb43b34858a4331bdba8a245c76da36
+model_type: ''
+name: Dummy mean
+source_run_id: 4f998bb5f5604bfea9a8834906b6e928
+status: 2
+status_message: null
