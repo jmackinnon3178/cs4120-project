@@ -55,6 +55,44 @@ def cv_and_log(X_train, y_train, pipelines, scoring, cv):
         print("mlflow tracking disabled")
         print(baseline_results)
 
+def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
+    rows = []
+
+    for k, v in scoring.items():
+        gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
+        scores = []
+        for train_idx, test_idx in cv_outer.split(X_train, y_train):
+            gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
+            X_test = X_train.iloc[test_idx]
+            y_test = pd.Series(y_train).iloc[test_idx]
+            best_model = gs.best_estimator_
+            scores.append(best_model.score(X_test, y_test))
+
+        row = {"name": f"{name}_{k}_GSCV"}
+        row["pipeline"] = gs.best_estimator_
+        row["params"] = gs.best_params_
+        row[f"mean_{k}"] = float(np.mean(scores))
+        row[f"std_{k}"] = float(np.std(scores))
+        rows.append(row)
+
+    if (mlflow_tracking):
+        for row in rows:
+            name = row["name"]
+            pipeline = row["pipeline"]
+            params = row["params"]
+            metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
+            pipeline.fit(X_train, y_train)
+
+            with mlflow.start_run(run_name=f"training-{name}"):
+                mlflow.log_metrics(metrics)
+                mlflow.log_params(params)
+                signature = infer_signature(X_train, pipeline.predict(X_train))
+                mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+
+    else:
+        print("mlfow tracking diabled")
+        print(rows)
+
 def train_linear_regression():
     d = data.Data()
     X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
@@ -107,40 +145,7 @@ def train_dt_regression():
 
     scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
     cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
-    rows = []
-
-    for k, v in scoring.items():
-        gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
-        scores = []
-        for train_idx, test_idx in cv_outer.split(X_train, y_train):
-            gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
-            X_test = X_train.iloc[test_idx]
-            y_test = pd.Series(y_train).iloc[test_idx]
-            best_model = gs.best_estimator_
-            scores.append(best_model.score(X_test, y_test))
-
-        row = {"name": f"DT_reg_{k}_GSCV"}
-        row["pipeline"] = gs.best_estimator_
-        row["params"] = gs.best_params_
-        row[f"mean_{k}"] = float(np.mean(scores))
-        row[f"std_{k}"] = float(np.std(scores))
-        rows.append(row)
-
-
-    if (mlflow_tracking):
-        for row in rows:
-            name = row["name"]
-            pipeline = row["pipeline"]
-            params = row["params"]
-            metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
-            pipeline.fit(X_train, y_train)
-
-            with mlflow.start_run(run_name=f"training-{name}"):
-                mlflow.log_metrics(metrics)
-                mlflow.log_params(params)
-                signature = infer_signature(X_train, pipeline.predict(X_train))
-                mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
-
+    gscv_and_log("DT_reg", X_train, y_train, pipe, param_grid, scoring, cv_outer)
 
 def train_logistic_regression():
     d = data.Data()
