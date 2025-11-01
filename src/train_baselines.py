@@ -211,8 +211,7 @@ def train_logistic_regression():
     param_grid = {
         "clf__C": [0.01, 0.1, 1.0, 10.0],
         "clf__penalty": ["l2"],
-        "clf__solver": ["lbfgs", "liblinear"]
-        # "clf__solver": ["lbfgs", "liblinear", "newton-cg", "sag", "saga"]
+        "clf__solver": ["lbfgs", "liblinear", "newton-cg", "sag", "saga"]
     }
 
     scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
