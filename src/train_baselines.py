@@ -105,7 +105,6 @@ def train_dt_regression():
         "regressor__criterion": ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
     }
 
-    # scoring = ["neg_root_mean_squared_error", "neg_mean_absolute_error"]
     scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
     cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
     rows = []
@@ -120,14 +119,27 @@ def train_dt_regression():
             best_model = gs.best_estimator_
             scores.append(best_model.score(X_test, y_test))
 
-        row = {"model": f"dt_reg_{k}_GSCV"}
+        row = {"name": f"DT_reg_{k}_GSCV"}
+        row["pipeline"] = gs.best_estimator_
         row["params"] = gs.best_params_
         row[f"mean_{k}"] = float(np.mean(scores))
         row[f"std_{k}"] = float(np.std(scores))
         rows.append(row)
-        # print(f"Nested CV {scoring}: mean={nested_cv_score_mean:.4f}, std={nested_cv_score_std:.4f}")
-        # print("Best params from inner CV:", gs.best_params_)
-    print(rows)
+
+
+    if (mlflow_tracking):
+        for row in rows:
+            name = row["name"]
+            pipeline = row["pipeline"]
+            params = row["params"]
+            metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
+            pipeline.fit(X_train, y_train)
+
+            with mlflow.start_run(run_name=f"training-{name}"):
+                mlflow.log_metrics(metrics)
+                mlflow.log_params(params)
+                signature = infer_signature(X_train, pipeline.predict(X_train))
+                mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
 
 
 def train_logistic_regression():
