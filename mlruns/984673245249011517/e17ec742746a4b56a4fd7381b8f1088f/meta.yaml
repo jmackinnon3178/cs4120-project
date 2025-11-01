@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/e17ec742746a4b56a4fd7381b8f1088f/artifacts
+end_time: 1761955720774
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: e17ec742746a4b56a4fd7381b8f1088f
+run_name: training-DTRegression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761955717956
+status: 3
+tags: []
+user_id: josh

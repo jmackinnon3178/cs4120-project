@@ -14,5 +14,12 @@ lr_prep_stdscaler = ColumnTransformer(
     ],
 )
 
+dt_prep = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(drop='if_binary'), feature_cols_categorical),
+        ('ord', OrdinalEncoder(), feature_cols_ordinal),
+        ('num', 'passthrough', feature_cols_numeric)
+    ],
+)
 def grade_to_pass_fail(target: df) -> df:
     return (target >= 10).astype(int)

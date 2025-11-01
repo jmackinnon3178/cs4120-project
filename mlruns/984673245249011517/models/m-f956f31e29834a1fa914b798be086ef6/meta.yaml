@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-f956f31e29834a1fa914b798be086ef6/artifacts
+creation_timestamp: 1761955721102
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1761955723580
+model_id: m-f956f31e29834a1fa914b798be086ef6
+model_type: ''
+name: DTRegressionSelectKBest
+source_run_id: b7299b1aad76476594629c634060ffca
+status: 2
+status_message: null

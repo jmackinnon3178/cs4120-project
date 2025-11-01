@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/79d7a2fbf40a434d8cf3f9e3f63420b5/artifacts
+end_time: 1761955539289
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 79d7a2fbf40a434d8cf3f9e3f63420b5
+run_name: training-Dummy median
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761955536575
+status: 3
+tags: []
+user_id: josh

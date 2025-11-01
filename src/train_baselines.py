@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import mlflow
 import data
-from features import lr_prep_stdscaler, grade_to_pass_fail
+from features import lr_prep_stdscaler, grade_to_pass_fail, dt_prep
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_validate
 from utils import make_cv
@@ -88,6 +89,37 @@ def train_linear_regression():
     cv = make_cv(y_train, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train, pipelines, scoring, cv)
 
+def train_dt_regression():
+    d = data.Data()
+    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
+
+    pipelines = {}
+    preprocessor = lr_prep_stdscaler
+    
+    pipelines["Dummy mean"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DummyRegressor(strategy="mean"))
+    ])
+    pipelines["Dummy median"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DummyRegressor(strategy="median"))
+    ])
+
+    preprocessor = dt_prep
+
+    pipelines["DTRegressionMD3"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20))
+    ])
+    pipelines["DTRegressionMD5"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=5, min_samples_split=20))
+    ])
+
+    scoring = {"r2": "r2", "mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
+    cv = make_cv(y_train, n_splits=5, random_state=random_state)
+    cv_and_log(X_train, y_train, pipelines, scoring, cv)
+
 def train_logistic_regression():
     d = data.Data()
     X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
@@ -132,4 +164,4 @@ def train_logistic_regression():
     cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
 
 if __name__ == '__main__':
-    train_logistic_regression()
+    train_dt_regression()
