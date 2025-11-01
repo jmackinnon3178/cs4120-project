@@ -93,40 +93,7 @@ def train_dt_regression():
     d = data.Data()
     X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
 
-    pipelines = {}
-    # preprocessor = lr_prep_stdscaler
-    
-    # pipelines["Dummy mean"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DummyRegressor(strategy="mean"))
-    # ])
-    # pipelines["Dummy median"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DummyRegressor(strategy="median"))
-    # ])
-
     preprocessor = dt_prep
-
-    # pipelines["DTRegressionMD3_sqe"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='squared_error'))
-    # ])
-    # pipelines["DTRegressionMD3_friedman"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='friedman_mse'))
-    # ])
-    # pipelines["DTRegressionMD3_abs"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='absolute_error'))
-    # ])
-    # pipelines["DTRegressionMD3_poisson"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='poisson'))
-    # ])
-    # pipelines["DTRegressionMD5"] = Pipeline([
-    #     ("preprocessor", preprocessor),
-    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=5, min_samples_split=20))
-    # ])
 
     pipe = Pipeline([
         ("preprocessor", preprocessor),
@@ -138,23 +105,29 @@ def train_dt_regression():
         "regressor__criterion": ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
     }
 
-    # scoring = "neg_mean_absolute_error"
-    scoring = "neg_root_mean_squared_error"
+    # scoring = ["neg_root_mean_squared_error", "neg_mean_absolute_error"]
+    scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
     cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
-    gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=scoring, n_jobs=-1)
+    rows = []
 
-    scores = []
-    for train_idx, test_idx in cv_outer.split(X_train, y_train):
-        gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
-        X_test = X_train.iloc[test_idx]
-        y_test = pd.Series(y_train).iloc[test_idx]
-        best_model = gs.best_estimator_
-        scores.append(best_model.score(X_test, y_test))
+    for k, v in scoring.items():
+        gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
+        scores = []
+        for train_idx, test_idx in cv_outer.split(X_train, y_train):
+            gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
+            X_test = X_train.iloc[test_idx]
+            y_test = pd.Series(y_train).iloc[test_idx]
+            best_model = gs.best_estimator_
+            scores.append(best_model.score(X_test, y_test))
 
-    nested_cv_score_mean = float(np.mean(scores))
-    nested_cv_score_std = float(np.std(scores))
-    print(f"Nested CV {scoring}: mean={nested_cv_score_mean:.4f}, std={nested_cv_score_std:.4f}")
-    print("Best params from inner CV:", gs.best_params_)
+        row = {"model": f"dt_reg_{k}_GSCV"}
+        row["params"] = gs.best_params_
+        row[f"mean_{k}"] = float(np.mean(scores))
+        row[f"std_{k}"] = float(np.std(scores))
+        rows.append(row)
+        # print(f"Nested CV {scoring}: mean={nested_cv_score_mean:.4f}, std={nested_cv_score_std:.4f}")
+        # print("Best params from inner CV:", gs.best_params_)
+    print(rows)
 
 
 def train_logistic_regression():
