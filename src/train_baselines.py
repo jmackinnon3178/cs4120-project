@@ -147,6 +147,27 @@ def train_dt_regression():
     cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
     gscv_and_log("DT_reg", X_train, y_train, pipe, param_grid, scoring, cv_outer)
 
+def train_dt_clf():
+    d = data.Data()
+    X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
+    y_train_clf = grade_to_pass_fail(y_train)
+
+    preprocessor = dt_prep
+
+    pipe = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", DecisionTreeClassifier(random_state=random_state))
+    ])
+    param_grid = {
+        "clf__max_depth": list(range(2, 7)),
+        "clf__min_samples_split": list(range(2, 20)),
+        "clf__criterion": ['gini', 'entropy', 'log_loss']
+    }
+
+    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
+    cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
+    gscv_and_log("DT_clf", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
+
 def train_logistic_regression():
     d = data.Data()
     X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
@@ -191,4 +212,4 @@ def train_logistic_regression():
     cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
 
 if __name__ == '__main__':
-    train_dt_regression()
+    train_dt_clf()
