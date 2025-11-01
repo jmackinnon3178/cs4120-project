@@ -13,7 +13,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
 from mlflow.models.signature import infer_signature
 
-mlflow_tracking = True
+mlflow_tracking = False
 random_state = 1
 
 if (mlflow_tracking):
@@ -27,33 +27,34 @@ def cv_and_log(X_train, y_train, pipelines, scoring, cv):
     for name, pipe in pipelines.items():
         cvres = cross_validate(pipe, X_train, y_train, cv=cv, scoring=scoring, n_jobs=-1, return_train_score=False)
         row = {"model": name}
+        row["pipeline"] = pipe
         for k, v in scoring.items():
             row[f"mean_{k}"] = np.mean(cvres[f"test_{k}"])
             row[f"std_{k}"] = np.std(cvres[f"test_{k}"])
         rows.append(row)
 
-    if (mlflow_tracking):
-        for row in rows:
-            name = row["model"]
-            pipeline = pipelines[name]
-            metrics = {k: v for k,v in row.items() if k != "model"}
-            pipeline.fit(X_train, y_train)
-            
+    # return rows
+    parse_cv_results(rows)
+
+def parse_cv_results(rows):
+    for row in rows:
+        name = row["model"]
+        pipeline = row["pipeline"]
+        metrics = {k: v for k,v in row.items() if k != "model"}
+        # pipeline.fit(X_train, y_train)
+        
+        if (mlflow_tracking):
             with mlflow.start_run(run_name=f"cv-{name}"):
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(pipeline.get_params())
-                signature = infer_signature(X_train, pipeline.predict(X_train))
-                mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+                # signature = infer_signature(X_train, pipeline.predict(X_train))
+                # mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
 
-    else:
-        metric_key = list(scoring.keys())[0]
-        baseline_results = (
-            pd.DataFrame(rows)
-            .sort_values(by=[f"mean_{metric_key}"], ascending=False)
-            .reset_index(drop=True)
-        )
-        print("mlflow tracking disabled")
-        print(baseline_results)
+        else:
+            df = pd.DataFrame(rows)
+            res = df.drop(columns="pipeline")
+            print("mlflow tracking disabled")
+            print(res)
 
 def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
     rows = []
@@ -70,28 +71,34 @@ def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
 
         row = {"name": f"{name}_{k}_GSCV"}
         row["pipeline"] = gs.best_estimator_
-        row["params"] = gs.best_params_
         row[f"mean_{k}"] = float(np.mean(scores))
         row[f"std_{k}"] = float(np.std(scores))
+        row["params"] = gs.best_params_
         rows.append(row)
 
-    if (mlflow_tracking):
-        for row in rows:
-            name = row["name"]
-            pipeline = row["pipeline"]
-            params = row["params"]
-            metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
-            pipeline.fit(X_train, y_train)
+    # return rows
+    parse_gscv_results(rows)
 
+def parse_gscv_results(rows):
+    for row in rows:
+        name = row["name"]
+        pipeline = row["pipeline"]
+        params = row["params"]
+        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
+        # pipeline.fit(X_train, y_train)
+
+        if (mlflow_tracking):
             with mlflow.start_run(run_name=f"cv-{name}"):
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(pipeline.get_params())
-                signature = infer_signature(X_train, pipeline.predict(X_train))
-                mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+                # signature = infer_signature(X_train, pipeline.predict(X_train))
+                # mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
 
-    else:
-        print("mlfow tracking diabled")
-        print(pd.DataFrame(rows))
+        else:
+            print("mlfow tracking diabled")
+            df = pd.DataFrame(rows)
+            res = df.drop(columns=["pipeline", "params"])
+            print(res)
 
 def cv_regression_baselines():
     d = data.Data()

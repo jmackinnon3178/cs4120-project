@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-76f7a74b90644140a75ed9fd4d702037/artifacts
+creation_timestamp: 1762038811979
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762038814254
+model_id: m-76f7a74b90644140a75ed9fd4d702037
+model_type: ''
+name: DT_clf_train_accuracy_GSCV
+source_run_id: 350c33b1ef64404cbb789a2476157d4b
+status: 2
+status_message: null
