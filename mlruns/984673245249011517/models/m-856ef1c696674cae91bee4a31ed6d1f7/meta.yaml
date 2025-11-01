@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-856ef1c696674cae91bee4a31ed6d1f7/artifacts
+creation_timestamp: 1762017172122
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762017174556
+model_id: m-856ef1c696674cae91bee4a31ed6d1f7
+model_type: ''
+name: DTRegressionMD5
+source_run_id: 0831c82740c04fe99f1267edc801a3b5
+status: 2
+status_message: null

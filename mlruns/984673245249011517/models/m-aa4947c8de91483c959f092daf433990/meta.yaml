@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-aa4947c8de91483c959f092daf433990/artifacts
+creation_timestamp: 1762016384604
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762016386999
+model_id: m-aa4947c8de91483c959f092daf433990
+model_type: ''
+name: Dummy median
+source_run_id: 3fb16d2a796240f494e7823350846c64
+status: 2
+status_message: null

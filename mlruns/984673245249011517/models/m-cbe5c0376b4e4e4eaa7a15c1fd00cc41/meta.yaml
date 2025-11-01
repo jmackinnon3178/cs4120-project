@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-cbe5c0376b4e4e4eaa7a15c1fd00cc41/artifacts
+creation_timestamp: 1762017160778
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762017163250
+model_id: m-cbe5c0376b4e4e4eaa7a15c1fd00cc41
+model_type: ''
+name: DTRegressionMD3_sqe
+source_run_id: 8731d7b8065144b4b6ee049a366b2dc7
+status: 2
+status_message: null

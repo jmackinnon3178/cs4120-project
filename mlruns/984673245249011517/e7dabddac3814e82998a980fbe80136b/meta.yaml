@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/e7dabddac3814e82998a980fbe80136b/artifacts
+end_time: 1762016398370
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: e7dabddac3814e82998a980fbe80136b
+run_name: training-DTRegressionMD3_poisson
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762016395588
+status: 3
+tags: []
+user_id: josh

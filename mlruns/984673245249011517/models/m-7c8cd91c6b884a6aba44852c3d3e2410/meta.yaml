@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-7c8cd91c6b884a6aba44852c3d3e2410/artifacts
+creation_timestamp: 1762017163630
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762017166071
+model_id: m-7c8cd91c6b884a6aba44852c3d3e2410
+model_type: ''
+name: DTRegressionMD3_friedman
+source_run_id: 502bc800c69840c6b75aadb62086d082
+status: 2
+status_message: null

@@ -85,7 +85,7 @@ def train_linear_regression():
         ("regressor", LinearRegression())
     ])
 
-    scoring = {"r2": "r2", "mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
+    scoring = {"train_r2": "r2", "train_mae": "neg_mean_absolute_error", "rmse_train": "neg_root_mean_squared_error"}
     cv = make_cv(y_train, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train, pipelines, scoring, cv)
 
@@ -107,16 +107,28 @@ def train_dt_regression():
 
     preprocessor = dt_prep
 
-    pipelines["DTRegressionMD3"] = Pipeline([
+    pipelines["DTRegressionMD3_sqe"] = Pipeline([
         ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20))
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='squared_error'))
+    ])
+    pipelines["DTRegressionMD3_friedman"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='friedman_mse'))
+    ])
+    pipelines["DTRegressionMD3_abs"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='absolute_error'))
+    ])
+    pipelines["DTRegressionMD3_poisson"] = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='poisson'))
     ])
     pipelines["DTRegressionMD5"] = Pipeline([
         ("preprocessor", preprocessor),
         ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=5, min_samples_split=20))
     ])
 
-    scoring = {"r2": "r2", "mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
+    scoring = {"train_r2": "r2", "train_mae": "neg_mean_absolute_error", "rmse_train": "neg_root_mean_squared_error"}
     cv = make_cv(y_train, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train, pipelines, scoring, cv)
 
@@ -159,7 +171,7 @@ def train_logistic_regression():
         ("clf", LogisticRegression(penalty="l2", solver="saga", C=1.0, max_iter=2000))
     ])
 
-    scoring = {"accuracy": "accuracy", "f1": "f1"}
+    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
     cv = make_cv(y_train_clf, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
 
