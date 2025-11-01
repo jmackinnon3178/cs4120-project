@@ -6,7 +6,7 @@ from features import lr_prep_stdscaler, grade_to_pass_fail, dt_prep
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, GridSearchCV
 from utils import make_cv
 from sklearn.dummy import DummyRegressor, DummyClassifier
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
@@ -91,46 +91,71 @@ def train_linear_regression():
 
 def train_dt_regression():
     d = data.Data()
-    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
+    X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
 
     pipelines = {}
-    preprocessor = lr_prep_stdscaler
+    # preprocessor = lr_prep_stdscaler
     
-    pipelines["Dummy mean"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="mean"))
-    ])
-    pipelines["Dummy median"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="median"))
-    ])
+    # pipelines["Dummy mean"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DummyRegressor(strategy="mean"))
+    # ])
+    # pipelines["Dummy median"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DummyRegressor(strategy="median"))
+    # ])
 
     preprocessor = dt_prep
 
-    pipelines["DTRegressionMD3_sqe"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='squared_error'))
-    ])
-    pipelines["DTRegressionMD3_friedman"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='friedman_mse'))
-    ])
-    pipelines["DTRegressionMD3_abs"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='absolute_error'))
-    ])
-    pipelines["DTRegressionMD3_poisson"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='poisson'))
-    ])
-    pipelines["DTRegressionMD5"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=5, min_samples_split=20))
-    ])
+    # pipelines["DTRegressionMD3_sqe"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='squared_error'))
+    # ])
+    # pipelines["DTRegressionMD3_friedman"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='friedman_mse'))
+    # ])
+    # pipelines["DTRegressionMD3_abs"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='absolute_error'))
+    # ])
+    # pipelines["DTRegressionMD3_poisson"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=3, min_samples_split=20, criterion='poisson'))
+    # ])
+    # pipelines["DTRegressionMD5"] = Pipeline([
+    #     ("preprocessor", preprocessor),
+    #     ("regressor", DecisionTreeRegressor(random_state=random_state, max_depth=5, min_samples_split=20))
+    # ])
 
-    scoring = {"train_r2": "r2", "train_mae": "neg_mean_absolute_error", "rmse_train": "neg_root_mean_squared_error"}
-    cv = make_cv(y_train, n_splits=5, random_state=random_state)
-    cv_and_log(X_train, y_train, pipelines, scoring, cv)
+    pipe = Pipeline([
+        ("preprocessor", preprocessor),
+        ("regressor", DecisionTreeRegressor(random_state=random_state))
+    ])
+    param_grid = {
+        "regressor__max_depth": list(range(2, 7)),
+        "regressor__min_samples_split": list(range(2, 20)),
+        "regressor__criterion": ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
+    }
+
+    # scoring = "neg_mean_absolute_error"
+    scoring = "neg_root_mean_squared_error"
+    cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
+    gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=scoring, n_jobs=-1)
+
+    scores = []
+    for train_idx, test_idx in cv_outer.split(X_train, y_train):
+        gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
+        X_test = X_train.iloc[test_idx]
+        y_test = pd.Series(y_train).iloc[test_idx]
+        best_model = gs.best_estimator_
+        scores.append(best_model.score(X_test, y_test))
+
+    nested_cv_score_mean = float(np.mean(scores))
+    nested_cv_score_std = float(np.std(scores))
+    print(f"Nested CV {scoring}: mean={nested_cv_score_mean:.4f}, std={nested_cv_score_std:.4f}")
+    print("Best params from inner CV:", gs.best_params_)
+
 
 def train_logistic_regression():
     d = data.Data()
