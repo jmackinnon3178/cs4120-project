@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/05daf411ea8741d6ad341411c4ab4122/artifacts
+end_time: 1762033166368
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 05daf411ea8741d6ad341411c4ab4122
+run_name: training-LogisticRegression_RFE_LinearSVC
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762033163761
+status: 3
+tags: []
+user_id: josh

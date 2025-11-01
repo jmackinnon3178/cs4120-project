@@ -186,30 +186,38 @@ def train_logistic_regression():
     ])
     pipelines["LogisticRegression"] = Pipeline([
         ("preprocessor", preprocessor),
-        ("clf", LogisticRegression(max_iter=500))
+        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
     ])
     pipelines["LogisticRegression_Univariate_SelectKBest"] = Pipeline([
         ("preprocessor", preprocessor),
         ("select", SelectKBest(score_func=f_classif, k=min(20, X_train.shape[1]))),
-        ("clf", LogisticRegression(max_iter=500))
+        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
     ])
     pipelines["LogisticRegression_RFE_LinearSVC"] = Pipeline([
         ("preprocessor", preprocessor),
         ("rfe", RFE(estimator=LinearSVC(dual=False, max_iter=5000), n_features_to_select=min(20, X_train.shape[1] // 2))),
-        ("clf", LogisticRegression(max_iter=500))
-    ])
-    pipelines["LogisticRegression_L1"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", LogisticRegression(penalty="l1", solver="saga", C=1.0, max_iter=2000))
-    ])
-    pipelines["LogisticRegression_L2"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", LogisticRegression(penalty="l2", solver="saga", C=1.0, max_iter=2000))
+        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
     ])
 
     scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
     cv = make_cv(y_train_clf, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
 
+    pipe = Pipeline([
+        ("preprocessor", preprocessor),
+        ("clf", LogisticRegression(max_iter=2000, random_state=random_state))
+    ])
+
+    param_grid = {
+        "clf__C": [0.01, 0.1, 1.0, 10.0],
+        "clf__penalty": ["l2"],
+        "clf__solver": ["lbfgs", "liblinear"]
+        # "clf__solver": ["lbfgs", "liblinear", "newton-cg", "sag", "saga"]
+    }
+
+    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
+    cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
+    gscv_and_log("LogisticRegression", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
+
 if __name__ == '__main__':
-    train_dt_clf()
+    train_logistic_regression()

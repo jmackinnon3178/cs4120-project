@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/3d1c0aa27d3342799f3b0ddca2f296e6/artifacts
+end_time: 1762033279961
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 3d1c0aa27d3342799f3b0ddca2f296e6
+run_name: training-LogisticRegression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762033277348
+status: 3
+tags: []
+user_id: josh

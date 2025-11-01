@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-874068f9bfaa4f1db0e4692c38d725bc/artifacts
+creation_timestamp: 1762033388909
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762033391116
+model_id: m-874068f9bfaa4f1db0e4692c38d725bc
+model_type: ''
+name: LogisticRegression_train_accuracy_GSCV
+source_run_id: 8f87dca552a24b73a9a6a32423c00087
+status: 2
+status_message: null

@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-8e4d98bdf0264b9fb5e74b418cf9203d/artifacts
+creation_timestamp: 1762033274851
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762033277187
+model_id: m-8e4d98bdf0264b9fb5e74b418cf9203d
+model_type: ''
+name: Dummy_stratified
+source_run_id: 27758d33ff634a1b8fe8bfa956098aa2
+status: 2
+status_message: null
