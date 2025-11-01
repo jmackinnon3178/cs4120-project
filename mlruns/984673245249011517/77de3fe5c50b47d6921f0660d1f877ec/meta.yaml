@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/77de3fe5c50b47d6921f0660d1f877ec/artifacts
+end_time: 1762036456570
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 77de3fe5c50b47d6921f0660d1f877ec
+run_name: training-DT_reg_train_mae_GSCV
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762036454050
+status: 3
+tags: []
+user_id: josh

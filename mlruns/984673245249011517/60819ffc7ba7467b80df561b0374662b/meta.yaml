@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/60819ffc7ba7467b80df561b0374662b/artifacts
+end_time: 1762037391563
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 60819ffc7ba7467b80df561b0374662b
+run_name: training-DT_clf_train_accuracy_GSCV
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762037388187
+status: 3
+tags: []
+user_id: josh

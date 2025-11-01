@@ -39,7 +39,7 @@ def cv_and_log(X_train, y_train, pipelines, scoring, cv):
             metrics = {k: v for k,v in row.items() if k != "model"}
             pipeline.fit(X_train, y_train)
             
-            with mlflow.start_run(run_name=f"training-{name}"):
+            with mlflow.start_run(run_name=f"cv-{name}"):
                 mlflow.log_metrics(metrics)
                 mlflow.log_params(pipeline.get_params())
                 signature = infer_signature(X_train, pipeline.predict(X_train))
@@ -83,31 +83,23 @@ def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
             metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
             pipeline.fit(X_train, y_train)
 
-            with mlflow.start_run(run_name=f"training-{name}"):
+            with mlflow.start_run(run_name=f"cv-{name}"):
                 mlflow.log_metrics(metrics)
-                mlflow.log_params(params)
+                mlflow.log_params(pipeline.get_params())
                 signature = infer_signature(X_train, pipeline.predict(X_train))
                 mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
 
     else:
         print("mlfow tracking diabled")
-        print(rows)
+        print(pd.DataFrame(rows))
 
-def train_linear_regression():
+def cv_regression_baselines():
     d = data.Data()
     X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
 
     pipelines = {}
     preprocessor = lr_prep_stdscaler
     
-    pipelines["Dummy mean"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="mean"))
-    ])
-    pipelines["Dummy median"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DummyRegressor(strategy="median"))
-    ])
     pipelines["LinearRegression"] = Pipeline([
         ("preprocessor", preprocessor),
         ("regressor", LinearRegression())
@@ -123,13 +115,9 @@ def train_linear_regression():
         ("regressor", LinearRegression())
     ])
 
-    scoring = {"train_r2": "r2", "train_mae": "neg_mean_absolute_error", "rmse_train": "neg_root_mean_squared_error"}
+    scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
     cv = make_cv(y_train, n_splits=5, random_state=random_state)
     cv_and_log(X_train, y_train, pipelines, scoring, cv)
-
-def train_dt_regression():
-    d = data.Data()
-    X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
 
     preprocessor = dt_prep
 
@@ -147,7 +135,7 @@ def train_dt_regression():
     cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
     gscv_and_log("DT_reg", X_train, y_train, pipe, param_grid, scoring, cv_outer)
 
-def train_dt_clf():
+def cv_clf_baselines():
     d = data.Data()
     X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
     y_train_clf = grade_to_pass_fail(y_train)
@@ -168,22 +156,9 @@ def train_dt_clf():
     cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
     gscv_and_log("DT_clf", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
 
-def train_logistic_regression():
-    d = data.Data()
-    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
-    y_train_clf = grade_to_pass_fail(y_train)
-
     pipelines = {}
     preprocessor = lr_prep_stdscaler
     
-    pipelines["Dummy_most_frequent"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", DummyClassifier(strategy="most_frequent"))
-    ])
-    pipelines["Dummy_stratified"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", DummyClassifier(strategy="stratified"))
-    ])
     pipelines["LogisticRegression"] = Pipeline([
         ("preprocessor", preprocessor),
         ("clf", LogisticRegression(max_iter=500, random_state=random_state))
@@ -218,5 +193,6 @@ def train_logistic_regression():
     cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
     gscv_and_log("LogisticRegression", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
 
+
 if __name__ == '__main__':
-    train_logistic_regression()
+    cv_clf_baselines()

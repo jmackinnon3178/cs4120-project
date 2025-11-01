@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/8af180d7a2d743fea14f69314cbb135e/artifacts
+end_time: 1762036832990
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 8af180d7a2d743fea14f69314cbb135e
+run_name: training-LinearRegressionSelectKBest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762036830082
+status: 3
+tags: []
+user_id: josh

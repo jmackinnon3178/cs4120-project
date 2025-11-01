@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-c9225d08f73e412a8431241592541208/artifacts
+creation_timestamp: 1762036904739
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762036907003
+model_id: m-c9225d08f73e412a8431241592541208
+model_type: ''
+name: DT_reg_train_rmse_GSCV
+source_run_id: 11e7c13308524395883c4e11f9ac6e08
+status: 2
+status_message: null
