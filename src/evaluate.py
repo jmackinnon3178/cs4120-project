@@ -88,14 +88,14 @@ def eda_plots():
     y = d.y
     num_df = d.data[numcols]
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(6, 4))
     corr = num_df.corr()
     sns.heatmap(corr, annot=True, cmap='coolwarm', center=0)
     plt.title("Correlation Heatmap of Numeric Features")
     plt.savefig("./notebooks/heatmap.png", bbox_inches="tight")
     plt.close()
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(6, 4))
     y_labeled = grade_to_pass_fail(y)
     pass_fail_labels = {0: "fail", 1: "pass"}
     y_labeled_named = y_labeled.map(pass_fail_labels)
