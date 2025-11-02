@@ -22,7 +22,7 @@ class regression_baselines:
     def __init__(self):
         self.data = data.Data()
         self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
-        self.scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
+        self.scoring = {"mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
         self.cv = make_cv(self.y_train, n_splits=5, random_state=random_state)
         self.pipelines = {}
         self.gscv_pipelines = {}
