@@ -91,7 +91,6 @@ def parse_cv_results(rows, mlflow_tracking):
         df = pd.DataFrame(rows)
         res = df.drop(columns=["pipeline", "signature"])
         print("mlflow tracking disabled")
-        print(res)
         return res
 
 def parse_gscv_results(rows, mlflow_tracking):
