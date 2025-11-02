@@ -50,8 +50,8 @@ def parse_cv_results(rows, mlflow_tracking):
     for row in rows:
         name = row["model"]
         pipeline = row["pipeline"]
-        metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
         signature = row["signature"]
+        metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
         
         if mlflow_tracking:
             mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
@@ -96,8 +96,8 @@ def parse_gscv_results(rows, mlflow_tracking):
         name = row["name"]
         pipeline = row["pipeline"]
         params = row["params"]
-        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params", "signature"]}
         signature = row["signature"]
+        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params", "signature"]}
 
         if mlflow_tracking:
             mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
@@ -150,67 +150,61 @@ class regression_baselines:
         gscv_and_log(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv)
 
 
+class classification_baselines:
+    def __init__(self):
+        self.data = data.Data()
+        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
+        self.y_train_clf = grade_to_pass_fail(self.y_train)
+        self.y_test_clf = grade_to_pass_fail(self.y_test)
+        self.scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
+        self.cv = make_cv(self.y_train_clf, n_splits=5, random_state=random_state)
+        self.pipelines = {}
+        self.gscv_pipelines = {}
 
+        self.pipelines["LogisticRegression"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("clf", LogisticRegression(max_iter=500, random_state=random_state))
+        ])
+        self.pipelines["LogisticRegression_Univariate_SelectKBest"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("select", SelectKBest(score_func=f_classif, k=min(20, self.X_train.shape[1]))),
+            ("clf", LogisticRegression(max_iter=500, random_state=random_state))
+        ])
+        self.pipelines["LogisticRegression_RFE_LinearSVC"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("rfe", RFE(estimator=LinearSVC(dual=False, max_iter=5000), n_features_to_select=min(20, self.X_train.shape[1] // 2))),
+            ("clf", LogisticRegression(max_iter=500, random_state=random_state))
+        ])
 
-def cv_clf_baselines():
-    d = data.Data()
-    X_train, _, y_train, _ = d.train_test_split(test_ratio=0.4, random_state=random_state)
-    y_train_clf = grade_to_pass_fail(y_train)
+        self.gscv_pipelines["DT_clf"] = {
+            "pipeline": Pipeline([
+                ("preprocessor", dt_prep),
+                ("clf", DecisionTreeClassifier(random_state=random_state))
+            ]),
+            "param_grid": {
+                "clf__max_depth": list(range(2, 7)),
+                "clf__min_samples_split": list(range(2, 20)),
+                "clf__criterion": ['gini', 'entropy', 'log_loss']
+            }
+        }
+        self.gscv_pipelines["LogisticRegression"] = {
+            "pipeline": Pipeline([
+                ("preprocessor", lr_prep_stdscaler),
+                ("clf", LogisticRegression(max_iter=2000, random_state=random_state))
+            ]),
+            "param_grid": {
+                "clf__C": [0.01, 0.1, 1.0, 10.0],
+                "clf__penalty": ["l2"],
+                "clf__solver": ["lbfgs", "liblinear", "newton-cg", "sag", "saga"]
+            }
+        }
 
-    preprocessor = dt_prep
-
-    pipe = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", DecisionTreeClassifier(random_state=random_state))
-    ])
-    param_grid = {
-        "clf__max_depth": list(range(2, 7)),
-        "clf__min_samples_split": list(range(2, 20)),
-        "clf__criterion": ['gini', 'entropy', 'log_loss']
-    }
-
-    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
-    cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
-    gscv_and_log("DT_clf", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
-
-    pipelines = {}
-    preprocessor = lr_prep_stdscaler
-    
-    pipelines["LogisticRegression"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
-    ])
-    pipelines["LogisticRegression_Univariate_SelectKBest"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("select", SelectKBest(score_func=f_classif, k=min(20, X_train.shape[1]))),
-        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
-    ])
-    pipelines["LogisticRegression_RFE_LinearSVC"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("rfe", RFE(estimator=LinearSVC(dual=False, max_iter=5000), n_features_to_select=min(20, X_train.shape[1] // 2))),
-        ("clf", LogisticRegression(max_iter=500, random_state=random_state))
-    ])
-
-    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
-    cv = make_cv(y_train_clf, n_splits=5, random_state=random_state)
-    cv_and_log(X_train, y_train_clf, pipelines, scoring, cv)
-
-    pipe = Pipeline([
-        ("preprocessor", preprocessor),
-        ("clf", LogisticRegression(max_iter=2000, random_state=random_state))
-    ])
-
-    param_grid = {
-        "clf__C": [0.01, 0.1, 1.0, 10.0],
-        "clf__penalty": ["l2"],
-        "clf__solver": ["lbfgs", "liblinear", "newton-cg", "sag", "saga"]
-    }
-
-    scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
-    cv_outer = make_cv(y_train_clf, n_splits=5, random_state=random_state)
-    gscv_and_log("LogisticRegression", X_train, y_train_clf, pipe, param_grid, scoring, cv_outer)
-
+    def cv_classification_baselines(self):
+        cv_and_log(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
+        gscv_and_log(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv)
 
 if __name__ == '__main__':
-    rb = regression_baselines()
-    rb.cv_regression_baselines()
+    # rb = regression_baselines()
+    # rb.cv_regression_baselines()
+    cb = classification_baselines()
+    cb.cv_classification_baselines()

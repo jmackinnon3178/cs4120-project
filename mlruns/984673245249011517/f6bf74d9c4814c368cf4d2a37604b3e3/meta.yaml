@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/f6bf74d9c4814c368cf4d2a37604b3e3/artifacts
+end_time: 1762048404528
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: f6bf74d9c4814c368cf4d2a37604b3e3
+run_name: cv-LogisticRegression_Univariate_SelectKBest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762048401923
+status: 3
+tags: []
+user_id: josh
