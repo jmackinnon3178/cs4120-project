@@ -1,18 +1,12 @@
-from inspect import signature
-import numpy as np
-import pandas as pd
 import mlflow
 import data
 from features import lr_prep_stdscaler, grade_to_pass_fail, dt_prep
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_validate, GridSearchCV
-from utils import make_cv
-from sklearn.dummy import DummyRegressor, DummyClassifier
+from utils import make_cv, cross_val, gs_cross_val, parse_cv_results, parse_gscv_results
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
-from mlflow.models.signature import infer_signature
 
 mlflow_tracking = True
 random_state = 1
@@ -21,92 +15,6 @@ if (mlflow_tracking):
     mlflow.set_tracking_uri("http://127.0.0.1:8080")
     baseline_experiment = mlflow.set_experiment("Baseline_Models")
 # run in cs4120-project directory mlflow server --host 127.0.0.1 --port 8080 --artifacts-destination ./models
-
-def cv_and_log(X_train, y_train, pipelines, scoring, cv):
-    rows = []
-
-    for name, pipe in pipelines.items():
-        cvres = cross_validate(pipe, X_train, y_train, cv=cv, scoring=scoring, n_jobs=-1, return_train_score=False)
-        row = {"model": name}
-        row["pipeline"] = pipe
-        for k, v in scoring.items():
-            row[f"mean_{k}"] = np.mean(cvres[f"test_{k}"])
-            row[f"std_{k}"] = np.std(cvres[f"test_{k}"])
-        pipe.fit(X_train, y_train)
-        signature = infer_signature(X_train, pipe.predict(X_train))
-        row["signature"] = signature
-        rows.append(row)
-
-    # return rows
-    parse_cv_results(rows, mlflow_tracking)
-
-def mlflow_log(name, run_name, metrics, pipeline, signature):
-    with mlflow.start_run(run_name=run_name):
-        mlflow.log_metrics(metrics)
-        mlflow.log_params(pipeline.get_params())
-        mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
-
-def parse_cv_results(rows, mlflow_tracking):
-    for row in rows:
-        name = row["model"]
-        pipeline = row["pipeline"]
-        signature = row["signature"]
-        metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
-        
-        if mlflow_tracking:
-            mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
-
-        else:
-            df = pd.DataFrame(rows)
-            res = df.drop(columns=["pipeline", "signature"])
-            print("mlflow tracking disabled")
-            print(res)
-
-def gscv_and_log(pipelines, X_train, y_train, scoring, cv_outer):
-    rows = []
-    for name, rest in pipelines.items():
-        pipeline = rest["pipeline"]
-        param_grid = rest["param_grid"]
-        for k, v in scoring.items():
-            gs = GridSearchCV(pipeline, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
-            scores = []
-            for train_idx, test_idx in cv_outer.split(X_train, y_train):
-                gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
-                X_test = X_train.iloc[test_idx]
-                y_test = pd.Series(y_train).iloc[test_idx]
-                best_model = gs.best_estimator_
-                scores.append(best_model.score(X_test, y_test))
-
-            row = {"name": f"{name}_{k}_GSCV"}
-            pipeline = gs.best_estimator_
-            row["pipeline"] = pipeline
-            row[f"mean_{k}"] = float(np.mean(scores))
-            row[f"std_{k}"] = float(np.std(scores))
-            row["params"] = gs.best_params_
-            pipeline.fit(X_train, y_train)
-            signature = infer_signature(X_train, pipeline.predict(X_train))
-            row["signature"] = signature
-            rows.append(row)
-
-    # return rows
-    parse_gscv_results(rows, mlflow_tracking)
-
-def parse_gscv_results(rows, mlflow_tracking):
-    for row in rows:
-        name = row["name"]
-        pipeline = row["pipeline"]
-        params = row["params"]
-        signature = row["signature"]
-        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params", "signature"]}
-
-        if mlflow_tracking:
-            mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
-
-        else:
-            print("mlfow tracking diabled")
-            df = pd.DataFrame(rows)
-            res = df.drop(columns=["pipeline", "params"])
-            print(res)
 
 
 class regression_baselines:
@@ -146,8 +54,8 @@ class regression_baselines:
         }
 
     def cv_regression_baselines(self):
-        cv_and_log(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
-        gscv_and_log(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv)
+        parse_cv_results(cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv), True)
+        parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
 
 
 class classification_baselines:
@@ -200,11 +108,11 @@ class classification_baselines:
         }
 
     def cv_classification_baselines(self):
-        cv_and_log(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
-        gscv_and_log(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv)
+        parse_cv_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
+        parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
 
 if __name__ == '__main__':
-    # rb = regression_baselines()
-    # rb.cv_regression_baselines()
+    rb = regression_baselines()
+    rb.cv_regression_baselines()
     cb = classification_baselines()
     cb.cv_classification_baselines()
