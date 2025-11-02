@@ -9,6 +9,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
 
 mlflow_tracking = True
+run_gscv = False
 random_state = 1
 
 if (mlflow_tracking):
@@ -40,6 +41,10 @@ class regression_baselines:
             ("rfe", RFE(estimator=LinearSVR(max_iter=10000), n_features_to_select=min(20, self.X_train.shape[1] // 2))),
             ("regressor", LinearRegression())
         ])
+        self.pipelines["DecisionTreeRegressor"] = Pipeline([
+            ("preprocessor", dt_prep),
+            ("regressor", DecisionTreeRegressor(criterion='absolute_error', max_depth=3, random_state=random_state))
+        ])
 
         self.gscv_pipelines["DT_reg"] = {
             "pipeline":Pipeline([
@@ -53,9 +58,10 @@ class regression_baselines:
             }
         }
 
-    def cv_regression_baselines(self):
+    def cv_regression_baselines(self, run_gscv):
         parse_cv_results(cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv), True)
-        parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
+        if run_gscv:
+            parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
 
 
 class classification_baselines:
@@ -83,6 +89,10 @@ class classification_baselines:
             ("rfe", RFE(estimator=LinearSVC(dual=False, max_iter=5000), n_features_to_select=min(20, self.X_train.shape[1] // 2))),
             ("clf", LogisticRegression(max_iter=500, random_state=random_state))
         ])
+        self.pipelines["DecisionTreeClassifier"] = Pipeline([
+            ("preprocessor", dt_prep),
+            ("clf", DecisionTreeClassifier(criterion='entropy', max_depth=2,random_state=random_state))
+        ])
 
         self.gscv_pipelines["DT_clf"] = {
             "pipeline": Pipeline([
@@ -107,12 +117,13 @@ class classification_baselines:
             }
         }
 
-    def cv_classification_baselines(self):
+    def cv_classification_baselines(self, run_gscv):
         parse_cv_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
-        parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
+        if run_gscv:
+            parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
 
 if __name__ == '__main__':
     rb = regression_baselines()
-    rb.cv_regression_baselines()
+    rb.cv_regression_baselines(run_gscv)
     cb = classification_baselines()
-    cb.cv_classification_baselines()
+    cb.cv_classification_baselines(run_gscv)
