@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/9652f2a310b9468f849ba7062ca6c1df/artifacts
+end_time: 1762060349481
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 9652f2a310b9468f849ba7062ca6c1df
+run_name: cv-DecisionTreeRegressor
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762060346826
+status: 3
+tags: []
+user_id: josh
