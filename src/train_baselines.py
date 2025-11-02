@@ -63,6 +63,10 @@ class regression_baselines:
         if run_gscv:
             parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
 
+    def train_baseline_models(self):
+        for _, pipeline in self.pipelines.items():
+            pipeline.fit(self.X_train, self.y_train)
+
 
 class classification_baselines:
     def __init__(self):
@@ -121,6 +125,10 @@ class classification_baselines:
         parse_cv_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
         if run_gscv:
             parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
+
+    def train_baseline_models(self):
+        for _, pipeline in self.pipelines.items():
+            pipeline.fit(self.X_train, self.y_train_clf)
 
 if __name__ == '__main__':
     rb = regression_baselines()

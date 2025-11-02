@@ -40,8 +40,8 @@ def cross_val(X_train, y_train, pipelines, scoring, cv):
         row = {"model": name}
         row["pipeline"] = pipe
         for k, v in scoring.items():
-            row[f"mean_{k}"] = np.mean(cvres[f"test_{k}"])
-            row[f"std_{k}"] = np.std(cvres[f"test_{k}"])
+            row[f"mean_{k}_cv"] = np.mean(cvres[f"test_{k}"])
+            row[f"std_{k}_cv"] = np.std(cvres[f"test_{k}"])
         pipe.fit(X_train, y_train)
         signature = infer_signature(X_train, pipe.predict(X_train))
         row["signature"] = signature
@@ -67,8 +67,8 @@ def gs_cross_val(pipelines, X_train, y_train, scoring, cv_outer):
             row = {"name": f"{name}_{k}_GSCV"}
             pipeline = gs.best_estimator_
             row["pipeline"] = pipeline
-            row[f"mean_{k}"] = float(np.mean(scores))
-            row[f"std_{k}"] = float(np.std(scores))
+            row[f"mean_{k}_gscv"] = float(np.mean(scores))
+            row[f"std_{k}_gscv"] = float(np.std(scores))
             row["params"] = gs.best_params_
             pipeline.fit(X_train, y_train)
             signature = infer_signature(X_train, pipeline.predict(X_train))
@@ -87,11 +87,12 @@ def parse_cv_results(rows, mlflow_tracking):
         if mlflow_tracking:
             mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
 
-        else:
-            df = pd.DataFrame(rows)
-            res = df.drop(columns=["pipeline", "signature"])
-            print("mlflow tracking disabled")
-            print(res)
+    if not mlflow_tracking:
+        df = pd.DataFrame(rows)
+        res = df.drop(columns=["pipeline", "signature"])
+        print("mlflow tracking disabled")
+        print(res)
+        return res
 
 def parse_gscv_results(rows, mlflow_tracking):
     for row in rows:
