@@ -62,29 +62,31 @@ def parse_cv_results(rows, mlflow_tracking):
             print("mlflow tracking disabled")
             print(res)
 
-def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
+def gscv_and_log(pipelines, X_train, y_train, scoring, cv_outer):
     rows = []
+    for name, rest in pipelines.items():
+        pipeline = rest["pipeline"]
+        param_grid = rest["param_grid"]
+        for k, v in scoring.items():
+            gs = GridSearchCV(pipeline, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
+            scores = []
+            for train_idx, test_idx in cv_outer.split(X_train, y_train):
+                gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
+                X_test = X_train.iloc[test_idx]
+                y_test = pd.Series(y_train).iloc[test_idx]
+                best_model = gs.best_estimator_
+                scores.append(best_model.score(X_test, y_test))
 
-    for k, v in scoring.items():
-        gs = GridSearchCV(pipe, param_grid=param_grid, cv=5, scoring=v, n_jobs=-1)
-        scores = []
-        for train_idx, test_idx in cv_outer.split(X_train, y_train):
-            gs.fit(X_train.iloc[train_idx], pd.Series(y_train).iloc[train_idx])
-            X_test = X_train.iloc[test_idx]
-            y_test = pd.Series(y_train).iloc[test_idx]
-            best_model = gs.best_estimator_
-            scores.append(best_model.score(X_test, y_test))
-
-        row = {"name": f"{name}_{k}_GSCV"}
-        pipeline = gs.best_estimator_
-        row["pipeline"] = pipeline
-        row[f"mean_{k}"] = float(np.mean(scores))
-        row[f"std_{k}"] = float(np.std(scores))
-        row["params"] = gs.best_params_
-        pipeline.fit(X_train, y_train)
-        signature = infer_signature(X_train, pipeline.predict(X_train))
-        row["signature"] = signature
-        rows.append(row)
+            row = {"name": f"{name}_{k}_GSCV"}
+            pipeline = gs.best_estimator_
+            row["pipeline"] = pipeline
+            row[f"mean_{k}"] = float(np.mean(scores))
+            row[f"std_{k}"] = float(np.std(scores))
+            row["params"] = gs.best_params_
+            pipeline.fit(X_train, y_train)
+            signature = infer_signature(X_train, pipeline.predict(X_train))
+            row["signature"] = signature
+            rows.append(row)
 
     # return rows
     parse_gscv_results(rows, mlflow_tracking)
@@ -106,47 +108,49 @@ def parse_gscv_results(rows, mlflow_tracking):
             res = df.drop(columns=["pipeline", "params"])
             print(res)
 
-def cv_regression_baselines():
-    d = data.Data()
-    X_train, X_test, y_train, y_test = d.train_test_split(test_ratio=0.4, random_state=random_state)
 
-    pipelines = {}
-    preprocessor = lr_prep_stdscaler
-    
-    pipelines["LinearRegression"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", LinearRegression())
-    ])
-    pipelines["LinearRegressionSelectKBest"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("select", SelectKBest(score_func=f_regression, k=min(20, X_train.shape[1]))),
-        ("regressor", LinearRegression())
-    ])
-    pipelines["LinearRegressionRFELinearSVR"] = Pipeline([
-        ("preprocessor", preprocessor),
-        ("rfe", RFE(estimator=LinearSVR(max_iter=10000), n_features_to_select=min(20, X_train.shape[1] // 2))),
-        ("regressor", LinearRegression())
-    ])
+class regression_baselines:
+    def __init__(self):
+        self.data = data.Data()
+        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
+        self.scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
+        self.cv = make_cv(self.y_train, n_splits=5, random_state=random_state)
+        self.pipelines = {}
+        self.gscv_pipelines = {}
+        
+        self.pipelines["LinearRegression"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("regressor", LinearRegression())
+        ])
+        self.pipelines["LinearRegressionSelectKBest"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("select", SelectKBest(score_func=f_regression, k=min(20, self.X_train.shape[1]))),
+            ("regressor", LinearRegression())
+        ])
+        self.pipelines["LinearRegressionRFELinearSVR"] = Pipeline([
+            ("preprocessor", lr_prep_stdscaler),
+            ("rfe", RFE(estimator=LinearSVR(max_iter=10000), n_features_to_select=min(20, self.X_train.shape[1] // 2))),
+            ("regressor", LinearRegression())
+        ])
 
-    scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
-    cv = make_cv(y_train, n_splits=5, random_state=random_state)
-    cv_and_log(X_train, y_train, pipelines, scoring, cv)
+        self.gscv_pipelines["DT_reg"] = {
+            "pipeline":Pipeline([
+                ("preprocessor", dt_prep),
+                ("regressor", DecisionTreeRegressor(random_state=random_state))
+            ]),
+            "param_grid": {
+                "regressor__max_depth": list(range(2, 7)),
+                "regressor__min_samples_split": list(range(2, 20)),
+                "regressor__criterion": ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
+            }
+        }
 
-    preprocessor = dt_prep
+    def cv_regression_baselines(self):
+        cv_and_log(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
+        gscv_and_log(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv)
 
-    pipe = Pipeline([
-        ("preprocessor", preprocessor),
-        ("regressor", DecisionTreeRegressor(random_state=random_state))
-    ])
-    param_grid = {
-        "regressor__max_depth": list(range(2, 7)),
-        "regressor__min_samples_split": list(range(2, 20)),
-        "regressor__criterion": ['squared_error', 'friedman_mse', 'absolute_error', 'poisson']
-    }
 
-    scoring = {"train_mae": "neg_mean_absolute_error", "train_rmse": "neg_root_mean_squared_error"}
-    cv_outer = make_cv(y_train, n_splits=5, random_state=random_state)
-    gscv_and_log("DT_reg", X_train, y_train, pipe, param_grid, scoring, cv_outer)
+
 
 def cv_clf_baselines():
     d = data.Data()
@@ -208,4 +212,5 @@ def cv_clf_baselines():
 
 
 if __name__ == '__main__':
-    cv_regression_baselines()
+    rb = regression_baselines()
+    rb.cv_regression_baselines()

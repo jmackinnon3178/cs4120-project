@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/121455db971a458bb32e8465913fe280/artifacts
+end_time: 1762046344552
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 121455db971a458bb32e8465913fe280
+run_name: cv-LinearRegressionSelectKBest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762046341833
+status: 3
+tags: []
+user_id: josh
