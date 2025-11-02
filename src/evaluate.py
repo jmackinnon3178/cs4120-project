@@ -1,10 +1,15 @@
 from sklearn import metrics
 from train_baselines import regression_baselines, classification_baselines
 from utils import mlflow_log, parse_results
+from features import grade_to_pass_fail
 from sklearn.metrics import mean_absolute_error, mean_squared_error, f1_score, accuracy_score
 import numpy as np
 import pandas as pd
 from mlflow.models.signature import infer_signature
+import data
+import seaborn as sns
+import matplotlib.pyplot as plt
+from features import feature_cols_numeric
 
 random_state = 1
 reg = regression_baselines()
@@ -65,15 +70,44 @@ def cv_and_test_metrics(cv_rows, test_rows, task):
         comb_df["mean_accuracy_cv"] = comb_df["mean_accuracy_cv"].abs()
         comb_df["mean_f1_cv"] = comb_df["mean_f1_cv"].abs()
         comb_df = comb_df[["model", "accuracy_t", "mean_accuracy_cv", "std_accuracy_cv", "f1_t", "mean_f1_cv", "std_f1_cv"]]
-        comb_df = comb_df.sort_values(by="accuracy_t", ascending=False)
+        comb_df = comb_df.sort_values(by="f1_t", ascending=False)
 
     comb_df = comb_df.reset_index(drop=True)
     return comb_df
 
+def eda_plots():
+    numcols = feature_cols_numeric
+    numcols.append("G3")
+    d = data.Data()
+    y = d.y
+    num_df = d.data[numcols]
+
+    plt.figure(figsize=(8, 6))
+    corr = num_df.corr()
+    sns.heatmap(corr, annot=True, cmap='coolwarm', center=0)
+    plt.title("Correlation Heatmap of Numeric Features")
+    plt.savefig("./notebooks/heatmap.png", bbox_inches="tight")
+    plt.close()
+
+    plt.figure(figsize=(8, 6))
+    y_labeled = grade_to_pass_fail(y)
+    pass_fail_labels = {0: "fail", 1: "pass"}
+    y_labeled_named = y_labeled.map(pass_fail_labels)
+    ax = sns.countplot(x=y_labeled_named, palette='pastel')
+    for p in ax.patches:
+        height = p.get_height()
+        ax.text(p.get_x() + p.get_width()/2., height + 0.5,
+                int(height), ha="center", va="bottom", fontsize=10)
+    plt.title('Target Distribution')
+    plt.xlabel('Class')
+    plt.ylabel('Count')
+    plt.savefig("./notebooks/target_boxplot.png", bbox_inches="tight")
+    plt.close()
 
 if __name__ == '__main__':
-    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
-    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
+    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
+    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
+    eda_plots()
 
     # print(parse_results(reg_test_metrics(), True, cv=False))
     # print(parse_results(clf_test_metrics(), True, cv=False))
