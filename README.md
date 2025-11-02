@@ -2,10 +2,22 @@
 - clone the repo
 - enter cs4210-project directory
 - create python virtual environment in cs4210-project directory
-- enter virtual environment
-- run pip -r requirements.txt to install dependencies
 
-## Running
+```
+python3 -m venv .venv
+```
+- enter virtual environment
+
+```
+source /.venv/bin/activate
+```
+- to install dependencies run
+
+```
+pip -r requirements.txt
+```
+
+### Running
 - enter cs4210-project directory
 - start mlflow server with:
 
