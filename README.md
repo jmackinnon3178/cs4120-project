@@ -9,7 +9,7 @@ python3 -m venv .venv
 - enter virtual environment
 
 ```
-source /.venv/bin/activate
+source ./.venv/bin/activate
 ```
 - to install dependencies run
 
