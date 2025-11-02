@@ -4,7 +4,7 @@ from features import lr_prep_stdscaler, grade_to_pass_fail, dt_prep
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
-from utils import make_cv, cross_val, gs_cross_val, parse_cv_results, parse_gscv_results
+from utils import make_cv, cross_val, gs_cross_val, parse_results, parse_gscv_results
 from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
 
@@ -59,7 +59,7 @@ class regression_baselines:
         }
 
     def cv_regression_baselines(self, run_gscv):
-        parse_cv_results(cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv), True)
+        parse_results(cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv), True)
         if run_gscv:
             parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
 
@@ -122,7 +122,7 @@ class classification_baselines:
         }
 
     def cv_classification_baselines(self, run_gscv):
-        parse_cv_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
+        parse_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
         if run_gscv:
             parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
 

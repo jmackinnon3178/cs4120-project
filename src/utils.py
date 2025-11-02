@@ -77,7 +77,7 @@ def gs_cross_val(pipelines, X_train, y_train, scoring, cv_outer):
 
     return rows
 
-def parse_cv_results(rows, mlflow_tracking):
+def parse_results(rows, mlflow_tracking, cv=True):
     for row in rows:
         name = row["model"]
         pipeline = row["pipeline"]
@@ -85,7 +85,7 @@ def parse_cv_results(rows, mlflow_tracking):
         metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
         
         if mlflow_tracking:
-            mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
+            mlflow_log(name, f"{"cv" if cv else "t"}-{name}", metrics, pipeline, signature)
 
     if not mlflow_tracking:
         df = pd.DataFrame(rows)

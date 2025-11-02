@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/080b0058459242e6ac6ca0225b70ca39/artifacts
+deleted_time: 1762058511695
+end_time: 1762058343433
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: deleted
+run_id: 080b0058459242e6ac6ca0225b70ca39
+run_name: cv-DecisionTreeClassifier
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762058340888
+status: 3
+tags: []
+user_id: josh
