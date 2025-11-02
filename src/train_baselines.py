@@ -1,3 +1,4 @@
+from inspect import signature
 import numpy as np
 import pandas as pd
 import mlflow
@@ -13,7 +14,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, f_regression, RFE
 from sklearn.svm import LinearSVC, LinearSVR
 from mlflow.models.signature import infer_signature
 
-mlflow_tracking = False
+mlflow_tracking = True
 random_state = 1
 
 if (mlflow_tracking):
@@ -31,28 +32,33 @@ def cv_and_log(X_train, y_train, pipelines, scoring, cv):
         for k, v in scoring.items():
             row[f"mean_{k}"] = np.mean(cvres[f"test_{k}"])
             row[f"std_{k}"] = np.std(cvres[f"test_{k}"])
+        pipe.fit(X_train, y_train)
+        signature = infer_signature(X_train, pipe.predict(X_train))
+        row["signature"] = signature
         rows.append(row)
 
     # return rows
-    parse_cv_results(rows)
+    parse_cv_results(rows, mlflow_tracking)
 
-def parse_cv_results(rows):
+def mlflow_log(name, run_name, metrics, pipeline, signature):
+    with mlflow.start_run(run_name=run_name):
+        mlflow.log_metrics(metrics)
+        mlflow.log_params(pipeline.get_params())
+        mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+
+def parse_cv_results(rows, mlflow_tracking):
     for row in rows:
         name = row["model"]
         pipeline = row["pipeline"]
-        metrics = {k: v for k,v in row.items() if k != "model"}
-        # pipeline.fit(X_train, y_train)
+        metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
+        signature = row["signature"]
         
-        if (mlflow_tracking):
-            with mlflow.start_run(run_name=f"cv-{name}"):
-                mlflow.log_metrics(metrics)
-                mlflow.log_params(pipeline.get_params())
-                # signature = infer_signature(X_train, pipeline.predict(X_train))
-                # mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+        if mlflow:
+            mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
 
         else:
             df = pd.DataFrame(rows)
-            res = df.drop(columns="pipeline")
+            res = df.drop(columns=["pipeline", "signature"])
             print("mlflow tracking disabled")
             print(res)
 
