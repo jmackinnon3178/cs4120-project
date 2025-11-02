@@ -56,7 +56,7 @@ def clf_cv_metrics():
     rows = clf.cv_classification_baselines(False)
     return rows
 
-def cv_and_test_metrics(cv_rows, test_rows, task):
+def cv_and_test_metrics(cv_rows, test_rows, task, to_md=False):
     cv_df = (pd.DataFrame(cv_rows)).drop(columns=["pipeline", "signature"])
     test_df = (pd.DataFrame(test_rows)).drop(columns=["pipeline", "signature"])
         
@@ -74,6 +74,11 @@ def cv_and_test_metrics(cv_rows, test_rows, task):
         comb_df = comb_df.sort_values(by="f1_t", ascending=False)
 
     comb_df = comb_df.reset_index(drop=True)
+
+    if to_md:
+        with open(f"./notebooks/{task}_metrics.md", "w") as f:
+            f.write(comb_df.to_markdown())
+
     return comb_df
 
 def eda_plots():
@@ -133,8 +138,8 @@ def plot_confusion_matrix():
     plt.close()
 
 if __name__ == '__main__':
-    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
-    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
+    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=True))
+    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=True))
     eda_plots()
     residual_plot()
     plot_confusion_matrix()
