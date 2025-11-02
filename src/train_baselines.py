@@ -53,7 +53,7 @@ def parse_cv_results(rows, mlflow_tracking):
         metrics = {k: v for k,v in row.items() if k not in ["model", "pipeline", "signature"]}
         signature = row["signature"]
         
-        if mlflow:
+        if mlflow_tracking:
             mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
 
         else:
@@ -76,29 +76,29 @@ def gscv_and_log(name, X_train, y_train, pipe, param_grid, scoring, cv_outer):
             scores.append(best_model.score(X_test, y_test))
 
         row = {"name": f"{name}_{k}_GSCV"}
-        row["pipeline"] = gs.best_estimator_
+        pipeline = gs.best_estimator_
+        row["pipeline"] = pipeline
         row[f"mean_{k}"] = float(np.mean(scores))
         row[f"std_{k}"] = float(np.std(scores))
         row["params"] = gs.best_params_
+        pipeline.fit(X_train, y_train)
+        signature = infer_signature(X_train, pipeline.predict(X_train))
+        row["signature"] = signature
         rows.append(row)
 
     # return rows
-    parse_gscv_results(rows)
+    parse_gscv_results(rows, mlflow_tracking)
 
-def parse_gscv_results(rows):
+def parse_gscv_results(rows, mlflow_tracking):
     for row in rows:
         name = row["name"]
         pipeline = row["pipeline"]
         params = row["params"]
-        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params"]}
-        # pipeline.fit(X_train, y_train)
+        metrics = {k: v for k,v in row.items() if k not in ["name", "pipeline", "params", "signature"]}
+        signature = row["signature"]
 
-        if (mlflow_tracking):
-            with mlflow.start_run(run_name=f"cv-{name}"):
-                mlflow.log_metrics(metrics)
-                mlflow.log_params(pipeline.get_params())
-                # signature = infer_signature(X_train, pipeline.predict(X_train))
-                # mlflow.sklearn.log_model(sk_model=pipeline, name=name, signature=signature)
+        if mlflow_tracking:
+            mlflow_log(name, f"cv-{name}", metrics, pipeline, signature)
 
         else:
             print("mlfow tracking diabled")
@@ -208,4 +208,4 @@ def cv_clf_baselines():
 
 
 if __name__ == '__main__':
-    cv_clf_baselines()
+    cv_regression_baselines()

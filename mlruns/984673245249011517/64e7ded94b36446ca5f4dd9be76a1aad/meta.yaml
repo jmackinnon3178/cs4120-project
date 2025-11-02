@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/64e7ded94b36446ca5f4dd9be76a1aad/artifacts
+end_time: 1762043445917
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 64e7ded94b36446ca5f4dd9be76a1aad
+run_name: cv-LinearRegressionRFELinearSVR
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762043443172
+status: 3
+tags: []
+user_id: josh

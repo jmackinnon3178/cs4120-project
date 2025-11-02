@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-e347537c162f4fbfbe0ef8073afc38b4/artifacts
+creation_timestamp: 1762043516758
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1762043519049
+model_id: m-e347537c162f4fbfbe0ef8073afc38b4
+model_type: ''
+name: DT_reg_train_mae_GSCV
+source_run_id: 4aaf637b3eac40158d94ba976f7e920b
+status: 2
+status_message: null
