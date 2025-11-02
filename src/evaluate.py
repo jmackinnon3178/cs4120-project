@@ -104,10 +104,23 @@ def eda_plots():
     plt.savefig("./notebooks/target_boxplot.png", bbox_inches="tight")
     plt.close()
 
+def residual_plot():
+    pipeline = reg.pipelines["DecisionTreeRegressor"]
+    pipeline.fit(reg.X_train, reg.y_train)
+    y_pred = pipeline.predict(reg.X_test)
+    residuals = reg.y_test - y_pred
+
+    plt.figure(figsize=(6,4))
+    plt.scatter(y_pred, residuals, color='teal', alpha=0.7)
+    plt.axhline(y=0, color='red', linestyle='--')
+    plt.xlabel("Predicted Values")
+    plt.ylabel("Residuals (Actual - Predicted)")
+    plt.title("DecisionTreeRegressor Residuals vs Predicted")
+    plt.savefig("./notebooks/residuals_vs_predicted.png", bbox_inches="tight")
+    plt.close()
+
 if __name__ == '__main__':
     # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
     # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
-    eda_plots()
+    residual_plot()
 
-    # print(parse_results(reg_test_metrics(), True, cv=False))
-    # print(parse_results(clf_test_metrics(), True, cv=False))
