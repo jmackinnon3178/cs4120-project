@@ -46,21 +46,34 @@ def reg_cv_metrics():
     rows = reg.cv_regression_baselines(False)
     return rows
 
-def cv_and_test_metrics(cv_rows, test_rows):
+def clf_cv_metrics():
+    rows = clf.cv_classification_baselines(False)
+    return rows
+
+def cv_and_test_metrics(cv_rows, test_rows, task):
     cv_df = (pd.DataFrame(cv_rows)).drop(columns=["pipeline", "signature"])
     test_df = (pd.DataFrame(test_rows)).drop(columns=["pipeline", "signature"])
         
     comb_df = cv_df.combine_first(test_df)
-    comb_df["mean_mae_cv"] = comb_df["mean_mae_cv"].abs()
-    comb_df["mean_rmse_cv"] = comb_df["mean_mae_cv"].abs()
-    comb_df = comb_df[["model", "mae_t", "mean_mae_cv", "std_mae_cv", "rmse_t", "mean_rmse_cv", "std_rmse_cv"]]
-    comb_df = comb_df.sort_values(by="mae_t")
+
+    if task == "reg":
+        comb_df["mean_mae_cv"] = comb_df["mean_mae_cv"].abs()
+        comb_df["mean_rmse_cv"] = comb_df["mean_mae_cv"].abs()
+        comb_df = comb_df[["model", "mae_t", "mean_mae_cv", "std_mae_cv", "rmse_t", "mean_rmse_cv", "std_rmse_cv"]]
+        comb_df = comb_df.sort_values(by="mae_t")
+    else:
+        comb_df["mean_accuracy_cv"] = comb_df["mean_accuracy_cv"].abs()
+        comb_df["mean_f1_cv"] = comb_df["mean_f1_cv"].abs()
+        comb_df = comb_df[["model", "accuracy_t", "mean_accuracy_cv", "std_accuracy_cv", "f1_t", "mean_f1_cv", "std_f1_cv"]]
+        comb_df = comb_df.sort_values(by="accuracy_t", ascending=False)
+
     comb_df = comb_df.reset_index(drop=True)
     return comb_df
 
 
 if __name__ == '__main__':
-    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics()))
+    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
+    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
 
     # print(parse_results(reg_test_metrics(), True, cv=False))
     # print(parse_results(clf_test_metrics(), True, cv=False))

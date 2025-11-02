@@ -77,7 +77,7 @@ class classification_baselines:
         self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
         self.y_train_clf = grade_to_pass_fail(self.y_train)
         self.y_test_clf = grade_to_pass_fail(self.y_test)
-        self.scoring = {"train_accuracy": "accuracy", "train_f1": "f1"}
+        self.scoring = {"accuracy": "accuracy", "f1": "f1"}
         self.cv = make_cv(self.y_train_clf, n_splits=5, random_state=random_state)
         self.pipelines = {}
         self.gscv_pipelines = {}
@@ -125,9 +125,12 @@ class classification_baselines:
         }
 
     def cv_classification_baselines(self, run_gscv):
-        parse_results(cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv), True)
+        cv_rows = cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv)
         if run_gscv:
-            parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv), True)
+            gscv_rows = gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv)
+            return cv_rows, gscv_rows
+        else:
+            return cv_rows
 
     def train_baseline_models(self):
         for _, pipeline in self.pipelines.items():
@@ -135,11 +138,16 @@ class classification_baselines:
 
 if __name__ == '__main__':
     rb = regression_baselines()
+    cb = classification_baselines()
     if run_gscv:
         cv_rows, gscv_rows = rb.cv_regression_baselines(run_gscv)
         parse_results(cv_rows, mlflow_tracking)
         parse_gscv_results(gscv_rows, mlflow_tracking)
+        cv_rows, gscv_rows = cb.cv_classification_baselines(run_gscv)
+        parse_results(cv_rows, mlflow_tracking)
+        parse_gscv_results(gscv_rows, mlflow_tracking)
     else:
         cv_rows = rb.cv_regression_baselines(run_gscv)
-    cb = classification_baselines()
-    cb.cv_classification_baselines(run_gscv)
+        parse_results(cv_rows, mlflow_tracking)
+        cv_rows = cb.cv_classification_baselines(run_gscv)
+        parse_results(cv_rows, mlflow_tracking)
