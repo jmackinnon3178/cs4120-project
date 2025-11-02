@@ -59,9 +59,12 @@ class regression_baselines:
         }
 
     def cv_regression_baselines(self, run_gscv):
-        parse_results(cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv), True)
+        cv_rows = cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
         if run_gscv:
-            parse_gscv_results(gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv), True)
+            gscv_rows = gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv)
+            return cv_rows, gscv_rows
+        else:
+            return cv_rows
 
     def train_baseline_models(self):
         for _, pipeline in self.pipelines.items():
@@ -132,6 +135,11 @@ class classification_baselines:
 
 if __name__ == '__main__':
     rb = regression_baselines()
-    rb.cv_regression_baselines(run_gscv)
+    if run_gscv:
+        cv_rows, gscv_rows = rb.cv_regression_baselines(run_gscv)
+        parse_results(cv_rows, mlflow_tracking)
+        parse_gscv_results(gscv_rows, mlflow_tracking)
+    else:
+        cv_rows = rb.cv_regression_baselines(run_gscv)
     cb = classification_baselines()
     cb.cv_classification_baselines(run_gscv)

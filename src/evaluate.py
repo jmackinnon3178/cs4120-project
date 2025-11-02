@@ -41,6 +41,11 @@ def clf_test_metrics():
 
     return rows
 
+def reg_cv_metrics():
+    rows = reg.cv_regression_baselines(False)
+    return rows
+
 if __name__ == '__main__':
-    print(parse_results(reg_test_metrics(), True, cv=False))
-    print(parse_results(clf_test_metrics(), True, cv=False))
+    print(parse_results(reg_cv_metrics(), False))
+    # print(parse_results(reg_test_metrics(), True, cv=False))
+    # print(parse_results(clf_test_metrics(), True, cv=False))
