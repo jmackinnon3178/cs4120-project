@@ -10,6 +10,7 @@ import data
 import seaborn as sns
 import matplotlib.pyplot as plt
 from features import feature_cols_numeric
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 random_state = 1
 reg = regression_baselines()
@@ -119,8 +120,22 @@ def residual_plot():
     plt.savefig("./notebooks/residuals_vs_predicted.png", bbox_inches="tight")
     plt.close()
 
+def plot_confusion_matrix():
+    pipeline = clf.pipelines["LogisticRegression"]
+    pipeline.fit(clf.X_train, clf.y_train_clf)
+    y_pred = pipeline.predict(clf.X_test)
+
+    cm = confusion_matrix(clf.y_test_clf, y_pred, labels=[0,1])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Fail', 'Pass'])
+    disp.plot(cmap=plt.cm.Blues)
+    plt.title("LogisticRegression Confusion Matrix")
+    plt.savefig("./notebooks/confusion_matrix.png", bbox_inches="tight")
+    plt.close()
+
 if __name__ == '__main__':
-    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
-    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
+    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg"))
+    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf"))
+    eda_plots()
     residual_plot()
+    plot_confusion_matrix()
 
