@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/751b60eb045541bf8abb66441cd68c86/artifacts
+end_time: 1764031454217
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 751b60eb045541bf8abb66441cd68c86
+run_name: rare-finch-911
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031451301
+status: 3
+tags: []
+user_id: josh

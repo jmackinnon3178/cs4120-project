@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-7232edcf83414813aa4df5ea6821d5b1/artifacts
+creation_timestamp: 1764110273374
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1764110275839
+model_id: m-7232edcf83414813aa4df5ea6821d5b1
+model_type: ''
+name: LogisticRegression_RFE_LinearSVC
+source_run_id: e076279058ec41f7b1be1f736bc726f5
+status: 2
+status_message: null

@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-aca70f97342e4639b8608019dc322882/artifacts
+creation_timestamp: 1764112294282
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1764112296881
+model_id: m-aca70f97342e4639b8608019dc322882
+model_type: ''
+name: DecisionTreeRegressor
+source_run_id: 110a04f36f8145a5b0089c7661e64530
+status: 2
+status_message: null

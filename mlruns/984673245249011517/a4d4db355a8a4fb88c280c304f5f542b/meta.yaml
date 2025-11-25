@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/a4d4db355a8a4fb88c280c304f5f542b/artifacts
+end_time: 1764031345793
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: a4d4db355a8a4fb88c280c304f5f542b
+run_name: zealous-loon-16
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031343562
+status: 3
+tags: []
+user_id: josh

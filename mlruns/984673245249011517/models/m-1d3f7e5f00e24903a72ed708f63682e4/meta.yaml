@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-1d3f7e5f00e24903a72ed708f63682e4/artifacts
+creation_timestamp: 1764031341413
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1764031343422
+model_id: m-1d3f7e5f00e24903a72ed708f63682e4
+model_type: ''
+name: LinearRegressionRFELinearSVR
+source_run_id: abea4d73fe574a71b006a5f16d800a26
+status: 2
+status_message: null

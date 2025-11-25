@@ -1,0 +1,1 @@
+LinearSVC(dual=False, max_iter=5000)

@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/72846e250d9c4180b23959b3188bac29/artifacts
+end_time: 1764031308082
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 72846e250d9c4180b23959b3188bac29
+run_name: secretive-cat-971
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031308032
+status: 4
+tags: []
+user_id: josh

@@ -41,8 +41,8 @@ def clf_test_metrics():
         
         row = {"model": name}
         row["pipeline"] = pipeline
-        row["f1_t"] = f1_score(clf.y_test_clf, y_pred)
-        row["accuracy_t"] = accuracy_score(clf.y_test_clf, y_pred)
+        row["f1_t"] = f1_score(clf.y_test, y_pred)
+        row["accuracy_t"] = accuracy_score(clf.y_test, y_pred)
         row["signature"] = infer_signature(clf.X_test, y_pred)
         rows.append(row)
 
@@ -127,10 +127,10 @@ def residual_plot():
 
 def plot_confusion_matrix():
     pipeline = clf.pipelines["LogisticRegression"]
-    pipeline.fit(clf.X_train, clf.y_train_clf)
+    pipeline.fit(clf.X_train, clf.y_train)
     y_pred = pipeline.predict(clf.X_test)
 
-    cm = confusion_matrix(clf.y_test_clf, y_pred, labels=[0,1])
+    cm = confusion_matrix(clf.y_test, y_pred, labels=[0,1])
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Fail', 'Pass'])
     disp.plot(cmap=plt.cm.Blues)
     plt.title("LogisticRegression Confusion Matrix")
@@ -138,9 +138,9 @@ def plot_confusion_matrix():
     plt.close()
 
 if __name__ == '__main__':
-    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=True))
-    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=True))
-    eda_plots()
-    residual_plot()
-    plot_confusion_matrix()
+    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
+    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
+    # eda_plots()
+    # residual_plot()
+    # plot_confusion_matrix()
 
