@@ -75,8 +75,6 @@ class classification_baselines:
     def __init__(self):
         self.data = data.Data()
         self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state, clf=True)
-        # self.y_train_clf = grade_to_pass_fail(self.y_train)
-        # self.y_test_clf = grade_to_pass_fail(self.y_test)
         self.scoring = {"accuracy": "accuracy", "f1": "f1"}
         self.cv = make_cv(self.y_train, n_splits=5, random_state=random_state)
         self.pipelines = {}
