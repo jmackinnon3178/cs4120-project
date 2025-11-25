@@ -21,7 +21,7 @@ if (mlflow_tracking):
 class regression_baselines:
     def __init__(self):
         self.data = data.Data()
-        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
+        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state, clf=False)
         self.scoring = {"mae": "neg_mean_absolute_error", "rmse": "neg_root_mean_squared_error"}
         self.cv = make_cv(self.y_train, n_splits=5, random_state=random_state)
         self.pipelines = {}
@@ -74,11 +74,9 @@ class regression_baselines:
 class classification_baselines:
     def __init__(self):
         self.data = data.Data()
-        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state)
-        self.y_train_clf = grade_to_pass_fail(self.y_train)
-        self.y_test_clf = grade_to_pass_fail(self.y_test)
+        self.X_train, self.X_test, self.y_train, self.y_test = self.data.train_test_split(test_ratio=0.4, random_state=random_state, clf=True)
         self.scoring = {"accuracy": "accuracy", "f1": "f1"}
-        self.cv = make_cv(self.y_train_clf, n_splits=5, random_state=random_state)
+        self.cv = make_cv(self.y_train, n_splits=5, random_state=random_state)
         self.pipelines = {}
         self.gscv_pipelines = {}
 
@@ -125,16 +123,16 @@ class classification_baselines:
         }
 
     def cv_classification_baselines(self, run_gscv):
-        cv_rows = cross_val(self.X_train, self.y_train_clf, self.pipelines, self.scoring, self.cv)
+        cv_rows = cross_val(self.X_train, self.y_train, self.pipelines, self.scoring, self.cv)
         if run_gscv:
-            gscv_rows = gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train_clf, self.scoring, self.cv)
+            gscv_rows = gs_cross_val(self.gscv_pipelines, self.X_train, self.y_train, self.scoring, self.cv)
             return cv_rows, gscv_rows
         else:
             return cv_rows
 
     def train_baseline_models(self):
         for _, pipeline in self.pipelines.items():
-            pipeline.fit(self.X_train, self.y_train_clf)
+            pipeline.fit(self.X_train, self.y_train)
 
 if __name__ == '__main__':
     rb = regression_baselines()

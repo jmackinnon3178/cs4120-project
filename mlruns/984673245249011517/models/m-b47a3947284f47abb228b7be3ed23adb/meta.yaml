@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-b47a3947284f47abb228b7be3ed23adb/artifacts
+creation_timestamp: 1764112595568
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1764112597887
+model_id: m-b47a3947284f47abb228b7be3ed23adb
+model_type: ''
+name: LinearRegressionSelectKBest
+source_run_id: 34eb7bcff8764117a366264cb9373d11
+status: 2
+status_message: null

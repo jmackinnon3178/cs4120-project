@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/2a9430d7d16b4430a984aa25cd02ae47/artifacts
+end_time: 1764031606612
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 2a9430d7d16b4430a984aa25cd02ae47
+run_name: dapper-perch-838
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031604413
+status: 3
+tags: []
+user_id: josh

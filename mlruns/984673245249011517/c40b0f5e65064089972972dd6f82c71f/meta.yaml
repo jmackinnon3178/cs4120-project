@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/c40b0f5e65064089972972dd6f82c71f/artifacts
+end_time: 1764031599526
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: c40b0f5e65064089972972dd6f82c71f
+run_name: angry-fish-488
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031596494
+status: 3
+tags: []
+user_id: josh

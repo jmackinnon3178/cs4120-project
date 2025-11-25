@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/80fc5b11b2434d7eaa5864344282639a/artifacts
+end_time: 1764031601832
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 80fc5b11b2434d7eaa5864344282639a
+run_name: crawling-shrew-780
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031599622
+status: 3
+tags: []
+user_id: josh

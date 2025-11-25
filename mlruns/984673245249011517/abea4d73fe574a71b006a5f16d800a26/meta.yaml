@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/abea4d73fe574a71b006a5f16d800a26/artifacts
+end_time: 1764031343467
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: abea4d73fe574a71b006a5f16d800a26
+run_name: nosy-mare-130
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031341107
+status: 3
+tags: []
+user_id: josh

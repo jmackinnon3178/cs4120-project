@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/95a1fd6a65ea4d61ac9c9d9049aec359/artifacts
+end_time: 1764034451561
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 95a1fd6a65ea4d61ac9c9d9049aec359
+run_name: reg_baselines
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764034451497
+status: 4
+tags: []
+user_id: josh

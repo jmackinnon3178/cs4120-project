@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/5ef379225daa4d2c8224b567789a1c91/artifacts
+end_time: 1764031458966
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: 5ef379225daa4d2c8224b567789a1c91
+run_name: delightful-finch-183
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764031456588
+status: 3
+tags: []
+user_id: josh

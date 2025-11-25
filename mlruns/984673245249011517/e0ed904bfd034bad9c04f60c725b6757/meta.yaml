@@ -1,0 +1,14 @@
+artifact_uri: mlflow-artifacts:/984673245249011517/e0ed904bfd034bad9c04f60c725b6757/artifacts
+end_time: 1764112300711
+entry_point_name: ''
+experiment_id: '984673245249011517'
+lifecycle_stage: active
+run_id: e0ed904bfd034bad9c04f60c725b6757
+run_name: cv-LogisticRegression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764112297573
+status: 3
+tags: []
+user_id: josh

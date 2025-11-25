@@ -1,0 +1,10 @@
+artifact_location: mlflow-artifacts:/984673245249011517/models/m-e11725cd05804441a8b3b48db4c3bf27/artifacts
+creation_timestamp: 1764112818942
+experiment_id: '984673245249011517'
+last_updated_timestamp: 1764112821303
+model_id: m-e11725cd05804441a8b3b48db4c3bf27
+model_type: ''
+name: LogisticRegression_Univariate_SelectKBest
+source_run_id: 3ead0b49af554d35b24722fe09d905ea
+status: 2
+status_message: null

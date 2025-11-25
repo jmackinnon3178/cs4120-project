@@ -1,0 +1,12 @@
+[('preprocessor', ColumnTransformer(transformers=[('cat', OneHotEncoder(drop='if_binary'),
+                                 ['school', 'sex', 'address', 'famsize',
+                                  'Pstatus', 'Mjob', 'Fjob', 'reason',
+                                  'guardian', 'schoolsup', 'famsup', 'paid',
+                                  'activities', 'nursery', 'higher', 'internet',
+                                  'romantic']),
+                                ('ord', OrdinalEncoder(),
+                                 ['Medu', 'Fedu', 'traveltime', 'studytime',
+                                  'famrel', 'freetime', 'goout', 'Dalc', 'Walc',
+                                  'health']),
+                                ('num', 'passthrough',
+                                 ['age', 'failures', 'absences', 'G1', 'G2'])])), ('clf', DecisionTreeClassifier(criterion='entropy', max_depth=2, random_state=1))]

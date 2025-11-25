@@ -21,5 +21,6 @@ dt_prep = ColumnTransformer(
         ('num', 'passthrough', feature_cols_numeric)
     ],
 )
+
 def grade_to_pass_fail(target: df) -> df:
     return (target >= 10).astype(int)
