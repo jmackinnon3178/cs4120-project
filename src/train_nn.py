@@ -32,10 +32,11 @@ def nn_clf_baseline():
 
 def nn_clf():
     clf_data = data.Data()
-    X_train, X_test, y_train, y_test = clf_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=True)
+    # X_train, X_test, y_train, y_test = clf_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=True)
+    X_train, X_test, X_val, y_train, y_test, y_val = clf_data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=True)
 
     X_train = lr_prep_stdscaler.fit_transform(X_train)
-    X_test = lr_prep_stdscaler.transform(X_test)
+    X_val = lr_prep_stdscaler.transform(X_val)
 
     model = models.Sequential([
         layers.Input(shape=(X_train.shape[1],)),
@@ -57,8 +58,8 @@ def nn_clf():
     history = model.fit(
         X_train,
         y_train,
-        epochs=100,
-        validation_data=(X_test, y_test)
+        epochs=10,
+        validation_data=(X_val, y_val)
     )
 
 def nn_reg_baseline():
@@ -84,10 +85,11 @@ def nn_reg_baseline():
     
 def nn_reg():
     reg_data = data.Data()
-    X_train, X_test, y_train, y_test = reg_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=False)
+    # X_train, X_test, y_train, y_test = reg_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=False)
+    X_train, X_test, X_val, y_train, y_test, y_val = reg_data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=False)
 
     X_train = lr_prep_stdscaler.fit_transform(X_train)
-    X_test = lr_prep_stdscaler.transform(X_test)
+    X_val = lr_prep_stdscaler.transform(X_val)
 
     model = models.Sequential([
         layers.Input(shape=(X_train.shape[1],)),
@@ -110,11 +112,11 @@ def nn_reg():
         X_train,
         y_train,
         epochs=100,
-        validation_data=(X_test, y_test)
+        validation_data=(X_val, y_val)
     )
 
 if __name__ == '__main__':
-    # nn_clf()
+    nn_clf()
     # nn_clf_baseline()
     nn_reg()
-    nn_reg_baseline()
+    # nn_reg_baseline()
