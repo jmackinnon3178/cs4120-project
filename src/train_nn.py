@@ -1,4 +1,3 @@
-from keras.src.optimizers import optimizer
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 import data
 from features import lr_prep_stdscaler
