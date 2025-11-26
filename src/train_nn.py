@@ -6,7 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, accuracy_score
 from utils import cross_val, make_cv, parse_results
 import tensorflow as tf
-from keras import layers, models, optimizers, callbacks
+from keras import layers, metrics, models, optimizers, callbacks
 
 random_state = 1
 
@@ -82,7 +82,39 @@ def nn_reg_baseline():
     print(parse_results(cv_rows, False))
 
     
+def nn_reg():
+    reg_data = data.Data()
+    X_train, X_test, y_train, y_test = reg_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=False)
+
+    X_train = lr_prep_stdscaler.fit_transform(X_train)
+    X_test = lr_prep_stdscaler.transform(X_test)
+
+    model = models.Sequential([
+        layers.Input(shape=(X_train.shape[1],)),
+        layers.Dense(32, activation='relu'),
+        layers.Dropout(0.3),
+        layers.Dense(16, activation='relu'),
+        layers.Dropout(0.3),
+        layers.Dense(1)
+    ])
+
+    print(model.summary())
+
+    model.compile(
+        optimizer=optimizers.Adam(learning_rate=0.001),
+        loss='mse',
+        metrics=['mae', metrics.RootMeanSquaredError()]
+    )
+
+    history = model.fit(
+        X_train,
+        y_train,
+        epochs=100,
+        validation_data=(X_test, y_test)
+    )
+
 if __name__ == '__main__':
-    nn_clf()
-    nn_clf_baseline()
-    # nn_reg_baseline()
+    # nn_clf()
+    # nn_clf_baseline()
+    nn_reg()
+    nn_reg_baseline()
