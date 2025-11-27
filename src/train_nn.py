@@ -1,4 +1,3 @@
-from keras.src.optimizers import optimizer
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 import data
 from features import lr_prep_stdscaler
@@ -6,16 +5,17 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score, accuracy_score
 from utils import cross_val, make_cv, parse_results
 import tensorflow as tf
-from keras import layers, metrics, models, optimizers, callbacks
+from keras import layers, metrics, models, optimizers, callbacks, utils, losses
 import optuna
 
+# utils.set_random_seed(1)
 random_state = 1
 
-
 clf_data = data.Data()
+reg_data = data.Data()
 
 def nn_clf_baseline():
-    scoring = {"accuracy": "accuracy", "f1": "f1"}
+    scoring = {"accuracy": "accuracy_score", "f1": "f1_score"}
     clf_data = data.Data()
     X_train, X_test, y_train, y_test = clf_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=True)
     cv = make_cv(y_train, random_state=random_state)
@@ -78,7 +78,7 @@ def clf_optuna():
         model.add(
             layers.Dense(
                 units=trial.suggest_int("l1_units", 32, 64, step=8),
-                activation=trial.suggest_categorical("activation", ["relu", "linear", "tanh", "sigmoid"])
+                activation=trial.suggest_categorical("l1_activation", ["relu", "linear", "tanh", "sigmoid"])
             )
         )
         model.add(layers.Dropout(
@@ -88,7 +88,7 @@ def clf_optuna():
         model.add(
             layers.Dense(
                 units=trial.suggest_int("l2_units", 16, 32, step=8),
-                activation=trial.suggest_categorical("activation", ["relu", "linear", "tanh", "sigmoid"])
+                activation=trial.suggest_categorical("l2_activation", ["relu", "linear", "tanh", "sigmoid"])
             )
         )
         model.add(layers.Dropout(
@@ -131,7 +131,8 @@ def clf_optuna():
         score = model.evaluate(X_val, y_val)
         return score[1]
 
-    study = optuna.create_study(direction="maximize")
+    sampler = optuna.samplers.TPESampler(seed=random_state)
+    study = optuna.create_study(direction="maximize", sampler=sampler)
     study.optimize(objective, n_trials=120, timeout=600)
 
     print("Number of finished trials: {}".format(len(study.trials)))
@@ -167,7 +168,6 @@ def nn_reg_baseline():
 
     
 def nn_reg():
-    reg_data = data.Data()
     # X_train, X_test, y_train, y_test = reg_data.train_test_split(test_ratio=0.4, random_state=random_state, clf=False)
     X_train, X_test, X_val, y_train, y_test, y_val = reg_data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=False)
 
@@ -198,8 +198,91 @@ def nn_reg():
         validation_data=(X_val, y_val)
     )
 
+def reg_optuna():
+    def objective(trial):
+        X_train, X_test, X_val, y_train, y_test, y_val = reg_data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=False)
+
+        X_train = lr_prep_stdscaler.fit_transform(X_train)
+        X_val = lr_prep_stdscaler.transform(X_val)
+
+        model = models.Sequential()
+        model.add(layers.Input(shape=(X_train.shape[1],)))
+        model.add(
+            layers.Dense(
+                units=trial.suggest_int("l1_units", 32, 64, step=8),
+                activation=trial.suggest_categorical("l1_activation", ["relu", "linear", "tanh", "sigmoid"])
+            )
+        )
+        model.add(layers.Dropout(
+                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+            )
+        )
+        model.add(
+            layers.Dense(
+                units=trial.suggest_int("l2_units", 16, 32, step=8),
+                activation=trial.suggest_categorical("l2_activation", ["relu", "linear", "tanh", "sigmoid"])
+            )
+        )
+        model.add(layers.Dropout(
+                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+            )
+        )
+        model.add(layers.Dense(1))
+
+        opt = trial.suggest_categorical("optimizer", ["SGD", "Adam", "RMSprop"])
+        learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
+        early_stop = callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=3
+        )
+
+        match opt:
+            case "SGD":
+                optimizer = optimizers.SGD(learning_rate=learning_rate)
+            case "Adam":
+                optimizer = optimizers.Adam(learning_rate=learning_rate)
+            case "RMSprop":
+                optimizer = optimizers.RMSprop(learning_rate=learning_rate)
+            case _:
+                optimizer = optimizers.Adam(learning_rate=learning_rate)
+
+        model.compile(
+            optimizer=optimizer,
+            loss=losses.MeanSquaredError(),
+            metrics=[metrics.MeanAbsoluteError(), metrics.RootMeanSquaredError()]
+        )
+
+
+        model.fit(
+            X_train,
+            y_train,
+            epochs=12,
+            callbacks=[early_stop],
+            validation_data=(X_val, y_val)
+        )
+
+        score = model.evaluate(X_val, y_val)
+        return score[1]
+
+    sampler = optuna.samplers.TPESampler(seed=random_state)
+    study = optuna.create_study(direction="minimize", sampler=sampler)
+    study.optimize(objective, n_trials=120, timeout=600)
+
+    print("Number of finished trials: {}".format(len(study.trials)))
+
+    print("Best trial:")
+    trial = study.best_trial
+
+    print("  Value: {}".format(trial.value))
+
+    print("  Params: ")
+    for key, value in trial.params.items():
+        print("    {}: {}".format(key, value))
+
+
 if __name__ == '__main__':
-    clf_optuna()
+    # clf_optuna()
+    reg_optuna()
     # nn_clf()
     # nn_clf_baseline()
     # nn_reg()
