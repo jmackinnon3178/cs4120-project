@@ -8,7 +8,7 @@ import tensorflow as tf
 from keras import layers, metrics, models, optimizers, callbacks, utils, losses
 import optuna
 
-# utils.set_random_seed(1)
+utils.set_random_seed(37)
 random_state = 1
 
 clf_data = data.Data()
@@ -82,7 +82,7 @@ def clf_optuna():
             )
         )
         model.add(layers.Dropout(
-                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+                rate=trial.suggest_float("l1_drop_rate", 0.20, 0.35, step=0.05)
             )
         )
         model.add(
@@ -92,12 +92,12 @@ def clf_optuna():
             )
         )
         model.add(layers.Dropout(
-                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+                rate=trial.suggest_float("l2_drop_rate", 0.20, 0.35, step=0.05)
             )
         )
         model.add(layers.Dense(1, activation='sigmoid'))
 
-        opt = trial.suggest_categorical("optimizer", ["SGD", "Adam", "RMSprop"])
+        opt = trial.suggest_categorical("optimizer", ["Adam", "RMSprop"])
         learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
         early_stop = callbacks.EarlyStopping(
             monitor='val_loss',
@@ -105,8 +105,6 @@ def clf_optuna():
         )
 
         match opt:
-            case "SGD":
-                optimizer = optimizers.SGD(learning_rate=learning_rate)
             case "Adam":
                 optimizer = optimizers.Adam(learning_rate=learning_rate)
             case "RMSprop":
@@ -123,7 +121,7 @@ def clf_optuna():
         model.fit(
             X_train,
             y_train,
-            epochs=12,
+            epochs=32,
             callbacks=[early_stop],
             validation_data=(X_val, y_val)
         )
@@ -131,8 +129,7 @@ def clf_optuna():
         score = model.evaluate(X_val, y_val)
         return score[1]
 
-    sampler = optuna.samplers.TPESampler(seed=random_state)
-    study = optuna.create_study(direction="maximize", sampler=sampler)
+    study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=120, timeout=600)
 
     print("Number of finished trials: {}".format(len(study.trials)))
@@ -214,7 +211,7 @@ def reg_optuna():
             )
         )
         model.add(layers.Dropout(
-                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+                rate=trial.suggest_float("l1_drop_rate", 0.20, 0.35, step=0.05)
             )
         )
         model.add(
@@ -224,12 +221,12 @@ def reg_optuna():
             )
         )
         model.add(layers.Dropout(
-                rate=trial.suggest_float("rate", 0.20, 0.35, step=0.05)
+                rate=trial.suggest_float("l2_drop_rate", 0.20, 0.35, step=0.05)
             )
         )
         model.add(layers.Dense(1))
 
-        opt = trial.suggest_categorical("optimizer", ["SGD", "Adam", "RMSprop"])
+        opt = trial.suggest_categorical("optimizer", ["Adam", "RMSprop"])
         learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-1, log=True)
         early_stop = callbacks.EarlyStopping(
             monitor='val_loss',
@@ -237,8 +234,6 @@ def reg_optuna():
         )
 
         match opt:
-            case "SGD":
-                optimizer = optimizers.SGD(learning_rate=learning_rate)
             case "Adam":
                 optimizer = optimizers.Adam(learning_rate=learning_rate)
             case "RMSprop":
@@ -256,7 +251,7 @@ def reg_optuna():
         model.fit(
             X_train,
             y_train,
-            epochs=12,
+            epochs=32,
             callbacks=[early_stop],
             validation_data=(X_val, y_val)
         )
@@ -264,8 +259,7 @@ def reg_optuna():
         score = model.evaluate(X_val, y_val)
         return score[1]
 
-    sampler = optuna.samplers.TPESampler(seed=random_state)
-    study = optuna.create_study(direction="minimize", sampler=sampler)
+    study = optuna.create_study(direction="minimize")
     study.optimize(objective, n_trials=120, timeout=600)
 
     print("Number of finished trials: {}".format(len(study.trials)))
@@ -281,10 +275,35 @@ def reg_optuna():
 
 
 if __name__ == '__main__':
-    # clf_optuna()
-    reg_optuna()
+    clf_optuna()
+    # reg_optuna()
     # nn_clf()
     # nn_clf_baseline()
     # nn_reg()
     # nn_reg_baseline()
 
+#clf best
+  #   Best trial:
+  # Value: 0.9538461565971375
+  # Params:
+  #   l1_units: 56
+  #   l1_activation: sigmoid
+  #   l1_drop_rate: 0.25
+  #   l2_units: 24
+  #   l2_activation: sigmoid
+  #   l2_drop_rate: 0.25
+  #   optimizer: Adam
+  #   learning_rate: 0.014227960702996326
+
+# best reg
+# Best trial:
+#   Value: 0.9086486101150513
+#   Params:
+#     l1_units: 48
+#     l1_activation: sigmoid
+#     l1_drop_rate: 0.25
+#     l2_units: 32
+#     l2_activation: linear
+#     l2_drop_rate: 0.35
+#     optimizer: Adam
+#     learning_rate: 0.007780603487032244
