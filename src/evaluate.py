@@ -11,10 +11,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from features import feature_cols_numeric
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from keras import utils
+from train_nn import nn_clf_final, nn_reg_final
 
+
+utils.set_random_seed(37)
 random_state = 1
 reg = regression_baselines()
 clf = classification_baselines()
+data = data.Data()
+X_train_clf, X_test_clf, X_val_clf, y_train_clf, y_test_clf, y_val_clf = data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=True)
+X_train_reg, X_test_reg, X_val_reg, y_train_reg, y_test_reg, y_val_reg = data.train_test_val_split(train_ratio=0.6, test_ratio=0.2, val_ratio=0.2, random_state=random_state, clf=False)
 
 def reg_test_metrics():
     reg.train_baseline_models()
@@ -137,9 +144,33 @@ def plot_confusion_matrix():
     plt.savefig("./notebooks/confusion_matrix.png", bbox_inches="tight")
     plt.close()
 
+def plot_clf_nn():
+    history = nn_clf_final(X_train_clf, X_val_clf, y_train_clf, y_val_clf)
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label='val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='best')
+    plt.title("Classification NN Learning Curve")
+    plt.savefig("./notebooks/clf_nn_learning_curve.png", bbox_inches="tight")
+    plt.close()
+
+def plot_reg_nn():
+    history = nn_reg_final(X_train_reg, X_val_reg, y_train_reg, y_val_reg)
+    plt.plot(history.history['mean_absolute_error'], label='mean_absolute_error')
+    plt.plot(history.history['val_mean_absolute_error'], label='val_mean_absolute_error')
+    plt.xlabel('Epoch')
+    plt.ylabel('Mean Absolute Error')
+    plt.legend(loc='best')
+    plt.title("Regression NN Learning Curve")
+    plt.savefig("./notebooks/reg_nn_learning_curve.png", bbox_inches="tight")
+    plt.close()
+
 if __name__ == '__main__':
-    print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
-    print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
+    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
+    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
+    plot_clf_nn()
+    plot_reg_nn()
     # eda_plots()
     # residual_plot()
     # plot_confusion_matrix()
