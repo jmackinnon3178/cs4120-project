@@ -1,7 +1,7 @@
 from sklearn import metrics
 from train_baselines import regression_baselines, classification_baselines
 from utils import mlflow_log, parse_results
-from features import grade_to_pass_fail
+from features import grade_to_pass_fail, lr_prep_stdscaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, f1_score, accuracy_score
 import numpy as np
 import pandas as pd
@@ -11,9 +11,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from features import feature_cols_numeric
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from keras import utils
+from keras import utils, models
 from train_nn import nn_clf_final, nn_reg_final
 from sklearn.inspection import permutation_importance
+import pickle
 
 
 utils.set_random_seed(37)
@@ -198,11 +199,74 @@ def plot_perm_imp():
     plt.savefig("./notebooks/permutation_importance.png", bbox_inches="tight")
     plt.close()
     
+def nn_clf_metrics():
+    model = models.load_model("./models/nn_clf.keras")
+    X_test = lr_prep_stdscaler.fit_transform(X_test_clf)
+    score = model.evaluate(X_test, y_test_clf)
+    with open("./models/nn_clf_hist.pkl", "rb") as f:
+        history = pickle.load(f)
+
+    test_acc = score[1]
+    test_f1 = score[2]
+    val_acc = history["val_accuracy"][-1]
+    val_f1 = history["val_f1_score"][-1]
+
+    return {"model": "Classification MLP NN", "accuracy_t": test_acc, "accuracy_val": val_acc, "f1_t": test_f1, "f1_val": val_f1}
+
+def nn_reg_metrics():
+    model = models.load_model("./models/nn_reg.keras")
+    X_test = lr_prep_stdscaler.fit_transform(X_test_reg)
+    score = model.evaluate(X_test, y_test_reg)
+    with open("./models/nn_reg_hist.pkl", "rb") as f:
+        history = pickle.load(f)
+
+    test_mae = score[1]
+    test_rmse = score[2]
+    val_mae = history["val_mean_absolute_error"][-1]
+    val_rmse = history["val_root_mean_squared_error"][-1]
+
+    return {"model": "Regression MLP NN", "mae_t": test_mae, "rmse_t": test_rmse, "mae_val": val_mae, "rmse_val": val_rmse}
+
+def clf_comp_table(to_md=False):
+    classic_df = cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False).head(1).drop(columns=["std_accuracy_cv", "std_f1_cv"])
+    classic_df.columns = ["model", "accuracy_t", "accuracy_val", "f1_t", "f1_val"]
+    nn_df = pd.DataFrame(nn_clf_metrics().items()).set_index(0).T
+    nn_df.columns = ["model", "accuracy_t", "accuracy_val", "f1_t", "f1_val"]
+
+    comb_df = pd.concat([classic_df, nn_df], ignore_index=True)
+
+    if to_md:
+        with open(f"./notebooks/clf_nn_classic_metrics.md", "w") as f:
+            f.write(comb_df.to_markdown())
+
+    else:
+        return comb_df
+
+def reg_comp_table(to_md=False):
+    classic_df = cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False).head(1).drop(columns=["std_mae_cv", "std_rmse_cv"])
+    classic_df.columns = ["model", "mae_t", "mae_val", "rmse_t", "rmse_val"]
+    nn_df = pd.DataFrame(nn_reg_metrics().items()).set_index(0).T
+    nn_df.columns = ["model", "mae_t", "mae_val", "rmse_t", "rmse_val"]
+
+    comb_df = pd.concat([classic_df, nn_df], ignore_index=True)
+
+    if to_md:
+        with open(f"./notebooks/reg_nn_classic_metrics.md", "w") as f:
+            f.write(comb_df.to_markdown())
+
+    else:
+        return comb_df
 
 if __name__ == '__main__':
-    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
-    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
-    plot_perm_imp()
+    clf_comp_table(to_md=True)
+    reg_comp_table(to_md=True)
+    # print(clf_comp_table())
+    # print(reg_comp_table())
+    # nn_clf_metrics()
+    # nn_reg_metrics()
+    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False).iloc[0])
+    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False).iloc[0])
+    # plot_perm_imp()
     # plot_clf_nn()
     # plot_reg_nn()
     # eda_plots()

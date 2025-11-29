@@ -2,6 +2,7 @@ import data
 from features import lr_prep_stdscaler
 from keras import layers, metrics, models, optimizers, callbacks, utils, losses
 import optuna
+import pickle
 
 utils.set_random_seed(37)
 random_state = 1
@@ -42,7 +43,10 @@ def nn_clf_final(X_train, X_val, y_train, y_val):
         validation_data=(X_val, y_val)
     )
 
-    return history
+    model.save("./models/nn_clf.keras")
+
+    with open("./models/nn_clf_hist.pkl", "wb") as f:
+        pickle.dump(history.history, f)
 
 def nn_reg_final(X_train, X_val, y_train, y_val):
     X_train = lr_prep_stdscaler.fit_transform(X_train)
@@ -77,7 +81,10 @@ def nn_reg_final(X_train, X_val, y_train, y_val):
 
     )
 
-    return history
+    model.save("./models/nn_reg.keras")
+
+    with open("./models/nn_reg_hist.pkl", "wb") as f:
+        pickle.dump(history.history, f)
 
 def clf_optuna(X_train, X_val, y_train, y_val):
     X_train = lr_prep_stdscaler.fit_transform(X_train)
