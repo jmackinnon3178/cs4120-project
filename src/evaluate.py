@@ -179,10 +179,30 @@ def perm_imp():
             f"{res.importances_mean[i]:.3f}"
             f" +/- {res.importances_std[i]:.3f}")
 
+def plot_perm_imp():
+    model = clf.pipelines["LogisticRegression"]
+    model.fit(clf.X_train, clf.y_train)
+    res = permutation_importance(model, clf.X_test, clf.y_test, n_repeats=30, random_state=random_state, scoring='accuracy')
+
+    feat_names = data.dataset.variables.name[:32]
+
+    res_sorted = res.importances_mean.argsort()[::-1]
+    plt.figure(figsize=(8,6))
+    plt.barh(
+        feat_names[res_sorted],
+        res.importances_mean[res_sorted]
+    )
+    plt.title("Permutation Importance (Test set)")
+    plt.xlabel("Mean decrease in accuracy")
+    plt.gca().invert_yaxis()
+    plt.savefig("./notebooks/permutation_importance.png", bbox_inches="tight")
+    plt.close()
+    
+
 if __name__ == '__main__':
     # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
     # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
-    perm_imp()
+    plot_perm_imp()
     # plot_clf_nn()
     # plot_reg_nn()
     # eda_plots()
