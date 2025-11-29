@@ -213,8 +213,23 @@ def nn_clf_metrics():
 
     print(f"accuracy_t: {test_acc}, f1_t: {test_f1}, acc_val: {val_acc}, f1_val: {val_f1}")
 
+def nn_reg_metrics():
+    model = models.load_model("./models/nn_reg.keras")
+    X_test = lr_prep_stdscaler.fit_transform(X_test_reg)
+    score = model.evaluate(X_test, y_test_reg)
+    with open("./models/nn_reg_hist.pkl", "rb") as f:
+        history = pickle.load(f)
+
+    test_mae = score[1]
+    test_rmse = score[2]
+    val_mae = history["val_mean_absolute_error"][-1]
+    val_rmse = history["val_root_mean_squared_error"][-1]
+
+    print(f"mae_t: {test_mae}, rmse_t: {test_rmse}, mae_val: {val_mae}, rmse_val: {val_rmse}")
+
 if __name__ == '__main__':
     nn_clf_metrics()
+    nn_reg_metrics()
     # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
     # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
     # plot_perm_imp()
