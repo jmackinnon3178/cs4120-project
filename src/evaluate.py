@@ -227,7 +227,7 @@ def nn_reg_metrics():
 
     return {"model": "Regression MLP NN", "mae_t": test_mae, "rmse_t": test_rmse, "mae_val": val_mae, "rmse_val": val_rmse}
 
-def clf_comp_table(to_md=False):
+def clf_comp_table(to_md=False, to_tex=False):
     classic_df = cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False).head(1).drop(columns=["std_accuracy_cv", "std_f1_cv"])
     classic_df.columns = ["model", "accuracy_t", "accuracy_val", "f1_t", "f1_val"]
     nn_df = pd.DataFrame(nn_clf_metrics().items()).set_index(0).T
@@ -238,11 +238,13 @@ def clf_comp_table(to_md=False):
     if to_md:
         with open(f"./notebooks/clf_nn_classic_metrics.md", "w") as f:
             f.write(comb_df.to_markdown())
-
+    elif to_tex:
+        with open(f"./notebooks/clf_nn_classic_metrics.tex", "w") as f:
+            f.write(comb_df.to_latex())
     else:
         return comb_df
 
-def reg_comp_table(to_md=False):
+def reg_comp_table(to_md=False, to_tex=False):
     classic_df = cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False).head(1).drop(columns=["std_mae_cv", "std_rmse_cv"])
     classic_df.columns = ["model", "mae_t", "mae_val", "rmse_t", "rmse_val"]
     nn_df = pd.DataFrame(nn_reg_metrics().items()).set_index(0).T
@@ -253,13 +255,15 @@ def reg_comp_table(to_md=False):
     if to_md:
         with open(f"./notebooks/reg_nn_classic_metrics.md", "w") as f:
             f.write(comb_df.to_markdown())
-
+    elif to_tex:
+        with open(f"./notebooks/reg_nn_classic_metrics.tex", "w") as f:
+            f.write(comb_df.to_latex())
     else:
         return comb_df
 
 if __name__ == '__main__':
-    clf_comp_table(to_md=True)
-    reg_comp_table(to_md=True)
+    clf_comp_table(to_tex=True)
+    reg_comp_table(to_tex=True)
     # print(clf_comp_table())
     # print(reg_comp_table())
     # nn_clf_metrics()
