@@ -1,7 +1,7 @@
 from sklearn import metrics
 from train_baselines import regression_baselines, classification_baselines
 from utils import mlflow_log, parse_results
-from features import grade_to_pass_fail
+from features import grade_to_pass_fail, lr_prep_stdscaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, f1_score, accuracy_score
 import numpy as np
 import pandas as pd
@@ -11,9 +11,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from features import feature_cols_numeric
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from keras import utils
+from keras import utils, models
 from train_nn import nn_clf_final, nn_reg_final
 from sklearn.inspection import permutation_importance
+import pickle
 
 
 utils.set_random_seed(37)
@@ -198,11 +199,25 @@ def plot_perm_imp():
     plt.savefig("./notebooks/permutation_importance.png", bbox_inches="tight")
     plt.close()
     
+def nn_clf_metrics():
+    model = models.load_model("./models/nn_clf.keras")
+    X_test = lr_prep_stdscaler.fit_transform(X_test_clf)
+    score = model.evaluate(X_test, y_test_clf)
+    with open("./models/nn_clf_hist.pkl", "rb") as f:
+        history = pickle.load(f)
+
+    test_acc = score[1]
+    test_f1 = score[2]
+    val_acc = history["val_accuracy"][-1]
+    val_f1 = history["val_f1_score"][-1]
+
+    print(f"accuracy_t: {test_acc}, f1_t: {test_f1}, acc_val: {val_acc}, f1_val: {val_f1}")
 
 if __name__ == '__main__':
+    nn_clf_metrics()
     # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
     # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
-    plot_perm_imp()
+    # plot_perm_imp()
     # plot_clf_nn()
     # plot_reg_nn()
     # eda_plots()
