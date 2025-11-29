@@ -211,7 +211,7 @@ def nn_clf_metrics():
     val_acc = history["val_accuracy"][-1]
     val_f1 = history["val_f1_score"][-1]
 
-    print(f"accuracy_t: {test_acc}, f1_t: {test_f1}, acc_val: {val_acc}, f1_val: {val_f1}")
+    return {"model": "Classification MLP NN", "accuracy_t": test_acc, "accuracy_val": val_acc, "f1_t": test_f1, "f1_val": val_f1}
 
 def nn_reg_metrics():
     model = models.load_model("./models/nn_reg.keras")
@@ -225,13 +225,47 @@ def nn_reg_metrics():
     val_mae = history["val_mean_absolute_error"][-1]
     val_rmse = history["val_root_mean_squared_error"][-1]
 
-    print(f"mae_t: {test_mae}, rmse_t: {test_rmse}, mae_val: {val_mae}, rmse_val: {val_rmse}")
+    return {"model": "Regression MLP NN", "mae_t": test_mae, "rmse_t": test_rmse, "mae_val": val_mae, "rmse_val": val_rmse}
+
+def clf_comp_table(to_md=False):
+    classic_df = cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False).head(1).drop(columns=["std_accuracy_cv", "std_f1_cv"])
+    classic_df.columns = ["model", "accuracy_t", "accuracy_val", "f1_t", "f1_val"]
+    nn_df = pd.DataFrame(nn_clf_metrics().items()).set_index(0).T
+    nn_df.columns = ["model", "accuracy_t", "accuracy_val", "f1_t", "f1_val"]
+
+    comb_df = pd.concat([classic_df, nn_df], ignore_index=True)
+
+    if to_md:
+        with open(f"./notebooks/clf_nn_classic_metrics.md", "w") as f:
+            f.write(comb_df.to_markdown())
+
+    else:
+        return comb_df
+
+def reg_comp_table(to_md=False):
+    classic_df = cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False).head(1).drop(columns=["std_mae_cv", "std_rmse_cv"])
+    classic_df.columns = ["model", "mae_t", "mae_val", "rmse_t", "rmse_val"]
+    nn_df = pd.DataFrame(nn_reg_metrics().items()).set_index(0).T
+    nn_df.columns = ["model", "mae_t", "mae_val", "rmse_t", "rmse_val"]
+
+    comb_df = pd.concat([classic_df, nn_df], ignore_index=True)
+
+    if to_md:
+        with open(f"./notebooks/reg_nn_classic_metrics.md", "w") as f:
+            f.write(comb_df.to_markdown())
+
+    else:
+        return comb_df
 
 if __name__ == '__main__':
-    nn_clf_metrics()
-    nn_reg_metrics()
-    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False))
-    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False))
+    clf_comp_table(to_md=True)
+    reg_comp_table(to_md=True)
+    # print(clf_comp_table())
+    # print(reg_comp_table())
+    # nn_clf_metrics()
+    # nn_reg_metrics()
+    # print(cv_and_test_metrics(reg_cv_metrics(), reg_test_metrics(), "reg", to_md=False).iloc[0])
+    # print(cv_and_test_metrics(clf_cv_metrics(), clf_test_metrics(), "clf", to_md=False).iloc[0])
     # plot_perm_imp()
     # plot_clf_nn()
     # plot_reg_nn()
